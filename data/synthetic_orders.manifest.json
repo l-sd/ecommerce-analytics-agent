@@ -1,0 +1,8 @@
+{
+  "dataset": "synthetic e-commerce orders",
+  "seed": 20240601,
+  "base_unique_orders": 3000,
+  "rows_with_duplicates": 3090,
+  "duplicate_rows": 90,
+  "notice": "Synthetic practice data. Not real company or customer data."
+}

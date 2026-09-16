@@ -1,0 +1,318 @@
+{
+  "notice": "Synthetic practice data; not real company transactions.",
+  "definitions": {
+    "valid_order": "订单状态不为已退款或已取消，且重算金额非空",
+    "gmv": "有效订单的单价×数量之和",
+    "aov": "有效GMV / 有效订单数",
+    "rfm": "排除未知用户和缺失日期后，按最近购买、频次、金额三等分"
+  },
+  "kpi": {
+    "gmv": 9994087.4,
+    "orders": 2250,
+    "aov": 4441.82,
+    "quantity": 6623.0,
+    "customers": 200,
+    "items_per_order": 2.94
+  },
+  "channel": [
+    {
+      "渠道": "天猫",
+      "gmv": 3453411.7,
+      "orders": 793,
+      "quantity": 2323.0,
+      "aov": 4354.8697351828505,
+      "gmv_share": 0.3455454772188604
+    },
+    {
+      "渠道": "京东",
+      "gmv": 2201762.9,
+      "orders": 536,
+      "quantity": 1603.0,
+      "aov": 4107.7666044776115,
+      "gmv_share": 0.22030654844983644
+    },
+    {
+      "渠道": "拼多多",
+      "gmv": 1945174.2,
+      "orders": 439,
+      "quantity": 1291.0,
+      "aov": 4430.9207289293845,
+      "gmv_share": 0.1946324984110105
+    },
+    {
+      "渠道": "抖音",
+      "gmv": 1476029.7,
+      "orders": 269,
+      "quantity": 808.0,
+      "aov": 5487.099256505576,
+      "gmv_share": 0.14769029336285372
+    },
+    {
+      "渠道": "微信小程序",
+      "gmv": 831156.2,
+      "orders": 192,
+      "quantity": 535.0,
+      "aov": 4328.938541666666,
+      "gmv_share": 0.08316479201492674
+    },
+    {
+      "渠道": "未知",
+      "gmv": 86552.7,
+      "orders": 21,
+      "quantity": 63.0,
+      "aov": 4121.557142857143,
+      "gmv_share": 0.008660390542512166
+    }
+  ],
+  "monthly": [
+    {
+      "month": "2024-01",
+      "gmv": 903927.1,
+      "orders": 197,
+      "quantity": 569.0,
+      "aov": 4588.462436548223
+    },
+    {
+      "month": "2024-02",
+      "gmv": 819377.2,
+      "orders": 187,
+      "quantity": 551.0,
+      "aov": 4381.696256684491
+    },
+    {
+      "month": "2024-03",
+      "gmv": 961676.4,
+      "orders": 176,
+      "quantity": 545.0,
+      "aov": 5464.070454545455
+    },
+    {
+      "month": "2024-04",
+      "gmv": 777256.1,
+      "orders": 195,
+      "quantity": 589.0,
+      "aov": 3985.928717948718
+    },
+    {
+      "month": "2024-05",
+      "gmv": 712787.3,
+      "orders": 189,
+      "quantity": 529.0,
+      "aov": 3771.361375661376
+    },
+    {
+      "month": "2024-06",
+      "gmv": 873615.3,
+      "orders": 176,
+      "quantity": 532.0,
+      "aov": 4963.723295454546
+    },
+    {
+      "month": "2024-07",
+      "gmv": 946693.4,
+      "orders": 203,
+      "quantity": 589.0,
+      "aov": 4663.5142857142855
+    },
+    {
+      "month": "2024-08",
+      "gmv": 947108.8,
+      "orders": 176,
+      "quantity": 535.0,
+      "aov": 5381.3
+    },
+    {
+      "month": "2024-09",
+      "gmv": 618237.1,
+      "orders": 172,
+      "quantity": 498.0,
+      "aov": 3594.4017441860465
+    },
+    {
+      "month": "2024-10",
+      "gmv": 920740.7,
+      "orders": 178,
+      "quantity": 527.0,
+      "aov": 5172.700561797753
+    },
+    {
+      "month": "2024-11",
+      "gmv": 626393.3,
+      "orders": 185,
+      "quantity": 533.0,
+      "aov": 3385.90972972973
+    },
+    {
+      "month": "2024-12",
+      "gmv": 721796.4,
+      "orders": 182,
+      "quantity": 525.0,
+      "aov": 3965.914285714286
+    }
+  ],
+  "products_top15": [
+    {
+      "product_normalized": "iphone15pro256g",
+      "gmv": 1421842.0,
+      "orders": 51,
+      "quantity": 158.0,
+      "gmv_share": 0.14226831756544375,
+      "cumulative_share": 0.14226831756544375
+    },
+    {
+      "product_normalized": "华为mate60pro",
+      "gmv": 1133838.0,
+      "orders": 55,
+      "quantity": 162.0,
+      "gmv_share": 0.11345087896669785,
+      "cumulative_share": 0.2557191965321416
+    },
+    {
+      "product_normalized": "iphone15128g",
+      "gmv": 905849.0,
+      "orders": 50,
+      "quantity": 151.0,
+      "gmv_share": 0.09063849091413789,
+      "cumulative_share": 0.3463576874462795
+    },
+    {
+      "product_normalized": "联想小新pro16笔记本",
+      "gmv": 608895.0,
+      "orders": 38,
+      "quantity": 105.0,
+      "gmv_share": 0.06092552282462529,
+      "cumulative_share": 0.40728321027090475
+    },
+    {
+      "product_normalized": "荣耀magic6",
+      "gmv": 591852.0,
+      "orders": 42,
+      "quantity": 148.0,
+      "gmv_share": 0.05922021454405131,
+      "cumulative_share": 0.46650342481495605
+    },
+    {
+      "product_normalized": "戴尔u2723qe显示器",
+      "gmv": 479363.0,
+      "orders": 50,
+      "quantity": 137.0,
+      "gmv_share": 0.04796465958462601,
+      "cumulative_share": 0.514468084399582
+    },
+    {
+      "product_normalized": "戴森v12吸尘器",
+      "gmv": 470470.0,
+      "orders": 54,
+      "quantity": 143.0,
+      "gmv_share": 0.047074833466035124,
+      "cumulative_share": 0.5615429178656172
+    },
+    {
+      "product_normalized": "小米电视65寸",
+      "gmv": 464845.0,
+      "orders": 51,
+      "quantity": 155.0,
+      "gmv_share": 0.04651200068552532,
+      "cumulative_share": 0.6080549185511426
+    },
+    {
+      "product_normalized": "小米1412+256g",
+      "gmv": 459993.0,
+      "orders": 33,
+      "quantity": 107.0,
+      "gmv_share": 0.04602651363645269,
+      "cumulative_share": 0.6540814321875952
+    },
+    {
+      "product_normalized": "海尔冰箱501l",
+      "gmv": 459885.0,
+      "orders": 35,
+      "quantity": 115.0,
+      "gmv_share": 0.0460157072470669,
+      "cumulative_share": 0.7000971394346621
+    },
+    {
+      "product_normalized": "redmik70",
+      "gmv": 374850.0,
+      "orders": 52,
+      "quantity": 150.0,
+      "gmv_share": 0.03750717649317335,
+      "cumulative_share": 0.7376043159278355
+    },
+    {
+      "product_normalized": "华为平板matepad11",
+      "gmv": 336447.0,
+      "orders": 52,
+      "quantity": 153.0,
+      "gmv_share": 0.03366460453407682,
+      "cumulative_share": 0.7712689204619123
+    },
+    {
+      "product_normalized": "美的1.5匹空调",
+      "gmv": 319086.0,
+      "orders": 42,
+      "quantity": 114.0,
+      "gmv_share": 0.03192747744031136,
+      "cumulative_share": 0.8031963979022236
+    },
+    {
+      "product_normalized": "海尔10kg滚筒洗衣机",
+      "gmv": 263961.0,
+      "orders": 45,
+      "quantity": 139.0,
+      "gmv_share": 0.026411716191315274,
+      "cumulative_share": 0.829608114093539
+    },
+    {
+      "product_normalized": "airpodspro2",
+      "gmv": 241173.0,
+      "orders": 47,
+      "quantity": 127.0,
+      "gmv_share": 0.024131568030913958,
+      "cumulative_share": 0.8537396821244528
+    }
+  ],
+  "rfm": [
+    {
+      "segment": "一般客户",
+      "customers": 83,
+      "gmv": 3569091.3,
+      "customer_share": 0.415,
+      "gmv_share": 0.3716807565372953
+    },
+    {
+      "segment": "重要挽留客户",
+      "customers": 48,
+      "gmv": 2636151.7,
+      "customer_share": 0.24,
+      "gmv_share": 0.2745255797191507
+    },
+    {
+      "segment": "重要价值客户",
+      "customers": 37,
+      "gmv": 2435291.9,
+      "customer_share": 0.185,
+      "gmv_share": 0.2536082884125568
+    },
+    {
+      "segment": "潜力客户",
+      "customers": 32,
+      "gmv": 962037.3,
+      "customer_share": 0.16,
+      "gmv_share": 0.10018537533099726
+    }
+  ],
+  "validation_values": {
+    "gmv_from_amount": 9994087.4,
+    "gmv_from_price_times_quantity": 9994087.4,
+    "channel_gmv_sum": 9994087.4,
+    "monthly_gmv_sum": 9829609.1,
+    "valid_gmv_with_missing_date": 164478.3
+  },
+  "limitations": [
+    "数据由固定随机种子生成，不代表任何真实企业、消费者或经营表现。",
+    "数据仅包含订单明细，无法计算UV、转化率、毛利率、ROI或因果效果。",
+    "缺失单价或数量的订单无法重算金额，相关GMV口径会排除这些记录。",
+    "RFM结果仅用于演示分析流程，不应直接转化为真实营销策略。"
+  ]
+}

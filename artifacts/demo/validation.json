@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "dataset": "synthetic",
+  "checks": [
+    {
+      "name": "raw row count retained in log",
+      "passed": true,
+      "detail": "3090"
+    },
+    {
+      "name": "deduplication",
+      "passed": true,
+      "detail": "3000 rows"
+    },
+    {
+      "name": "GMV dual calculation",
+      "passed": true,
+      "detail": "9994087.4 vs 9994087.4"
+    },
+    {
+      "name": "channel roll-up",
+      "passed": true,
+      "detail": "9994087.4"
+    },
+    {
+      "name": "monthly roll-up with missing dates",
+      "passed": true,
+      "detail": "9829609.1 + 164478.3"
+    },
+    {
+      "name": "Excel formula audit",
+      "passed": true,
+      "detail": "6000 formulas; bad rows: []"
+    },
+    {
+      "name": "HTML report structure",
+      "passed": true,
+      "detail": "missing: []"
+    },
+    {
+      "name": "sample recalculation",
+      "passed": true,
+      "detail": "5 rows checked"
+    }
+  ],
+  "files": [
+    "analysis.json",
+    "cleaned_orders.csv",
+    "cleaning_log.json",
+    "ecommerce_analysis.xlsx",
+    "report.html",
+    "validation.json",
+    "validation.md"
+  ]
+}

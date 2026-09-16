@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>电商订单分析报告（模拟数据）</title><style>
+:root{--ink:#17201d;--muted:#66736e;--green:#175c4c;--mint:#dfece7;--paper:#f7f8f6;--line:#d7ddd9;--amber:#b66a19}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 "Microsoft YaHei",Arial,sans-serif}
+main{max-width:1120px;margin:auto;padding:42px 28px 64px}header{border-bottom:3px solid var(--green);padding-bottom:20px;margin-bottom:28px}
+h1{font-size:34px;line-height:1.2;margin:0 0 8px}h2{font-size:21px;margin:34px 0 12px}p{margin:7px 0;color:var(--muted)}
+.notice{display:inline-block;color:#713f12;background:#fef3c7;border:1px solid #f5d98d;padding:5px 10px;border-radius:4px;font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0}.kpi{background:white;border:1px solid var(--line);padding:16px;border-radius:6px}
+.kpi span{display:block;color:var(--muted);font-size:12px}.kpi strong{display:block;font-size:22px;margin-top:5px;color:var(--green)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel{background:white;border:1px solid var(--line);padding:18px;border-radius:6px}
+.bar-row{display:grid;grid-template-columns:78px 1fr 110px;gap:10px;align-items:center;margin:10px 0}.track{height:12px;background:#edf1ef}.track i{display:block;height:100%;background:var(--green)}
+table{width:100%;border-collapse:collapse;background:white;font-size:13px}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}th{background:var(--mint);color:var(--green)}th:first-child,td:first-child{text-align:left}
+code{background:#eef1ef;padding:2px 5px;border-radius:3px}ul{padding-left:20px;color:var(--muted)}footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+@media(max-width:800px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}main{padding:26px 14px}h1{font-size:28px}}
+</style></head><body><main>
+<header><span class="notice">模拟数据 / Synthetic data</span><h1>电商订单分析自动化报告</h1>
+<p>从数据体检、清洗、KPI、渠道/商品分析、RFM分层到Excel/HTML交付与验证的可复现工作流。</p></header>
+<section class="kpis">
+<div class="kpi"><span>有效GMV</span><strong>¥9,994,087</strong></div>
+<div class="kpi"><span>有效订单</span><strong>2,250</strong></div>
+<div class="kpi"><span>客单价</span><strong>¥4,442</strong></div>
+<div class="kpi"><span>有效客户</span><strong>200</strong></div>
+<div class="kpi"><span>连带率</span><strong>2.94</strong></div>
+</section>
+<section class="grid"><div class="panel"><h2>渠道GMV</h2><div class="bar-row"><span>天猫</span><div class="track"><i style="width:100.0%"></i></div><b>¥3,453,412</b></div><div class="bar-row"><span>京东</span><div class="track"><i style="width:63.8%"></i></div><b>¥2,201,763</b></div><div class="bar-row"><span>拼多多</span><div class="track"><i style="width:56.3%"></i></div><b>¥1,945,174</b></div><div class="bar-row"><span>抖音</span><div class="track"><i style="width:42.7%"></i></div><b>¥1,476,030</b></div><div class="bar-row"><span>微信小程序</span><div class="track"><i style="width:24.1%"></i></div><b>¥831,156</b></div><div class="bar-row"><span>未知</span><div class="track"><i style="width:2.5%"></i></div><b>¥86,553</b></div></div><div class="panel"><h2>数据体检</h2>
+<p>原始 3,090 行，识别重复 90 行、日期缺失 46 条、金额不一致 59 条。</p>
+<p>去重后 3,000 行；金额按 <code>单价 × 数量</code> 重算，并保留原金额追溯。</p>
+<p>GMV双路径差额：¥0.00</p></div></section>
+<h2>渠道分析</h2><div style='overflow:auto'><table><thead><tr><th>渠道</th><th>GMV</th><th>订单数</th><th>客单价</th><th>GMV占比</th></tr></thead><tbody><tr><td>天猫</td><td>¥3,453,411.70</td><td>793</td><td>¥4,354.87</td><td>34.6%</td></tr><tr><td>京东</td><td>¥2,201,762.90</td><td>536</td><td>¥4,107.77</td><td>22.0%</td></tr><tr><td>拼多多</td><td>¥1,945,174.20</td><td>439</td><td>¥4,430.92</td><td>19.5%</td></tr><tr><td>抖音</td><td>¥1,476,029.70</td><td>269</td><td>¥5,487.10</td><td>14.8%</td></tr><tr><td>微信小程序</td><td>¥831,156.20</td><td>192</td><td>¥4,328.94</td><td>8.3%</td></tr><tr><td>未知</td><td>¥86,552.70</td><td>21</td><td>¥4,121.56</td><td>0.9%</td></tr></tbody></table></div>
+<h2>月度趋势</h2><div style='overflow:auto'><table><thead><tr><th>月份</th><th>GMV</th><th>订单数</th><th>客单价</th></tr></thead><tbody><tr><td>2024-01</td><td>¥903,927.10</td><td>197</td><td>¥4,588.46</td></tr><tr><td>2024-02</td><td>¥819,377.20</td><td>187</td><td>¥4,381.70</td></tr><tr><td>2024-03</td><td>¥961,676.40</td><td>176</td><td>¥5,464.07</td></tr><tr><td>2024-04</td><td>¥777,256.10</td><td>195</td><td>¥3,985.93</td></tr><tr><td>2024-05</td><td>¥712,787.30</td><td>189</td><td>¥3,771.36</td></tr><tr><td>2024-06</td><td>¥873,615.30</td><td>176</td><td>¥4,963.72</td></tr><tr><td>2024-07</td><td>¥946,693.40</td><td>203</td><td>¥4,663.51</td></tr><tr><td>2024-08</td><td>¥947,108.80</td><td>176</td><td>¥5,381.30</td></tr><tr><td>2024-09</td><td>¥618,237.10</td><td>172</td><td>¥3,594.40</td></tr><tr><td>2024-10</td><td>¥920,740.70</td><td>178</td><td>¥5,172.70</td></tr><tr><td>2024-11</td><td>¥626,393.30</td><td>185</td><td>¥3,385.91</td></tr><tr><td>2024-12</td><td>¥721,796.40</td><td>182</td><td>¥3,965.91</td></tr></tbody></table></div>
+<h2>商品TOP10</h2><div style='overflow:auto'><table><thead><tr><th>商品</th><th>GMV</th><th>订单数</th><th>GMV占比</th><th>累计占比</th></tr></thead><tbody><tr><td>iphone15pro256g</td><td>¥1,421,842.00</td><td>51</td><td>14.2%</td><td>14.2%</td></tr><tr><td>华为mate60pro</td><td>¥1,133,838.00</td><td>55</td><td>11.3%</td><td>25.6%</td></tr><tr><td>iphone15128g</td><td>¥905,849.00</td><td>50</td><td>9.1%</td><td>34.6%</td></tr><tr><td>联想小新pro16笔记本</td><td>¥608,895.00</td><td>38</td><td>6.1%</td><td>40.7%</td></tr><tr><td>荣耀magic6</td><td>¥591,852.00</td><td>42</td><td>5.9%</td><td>46.7%</td></tr><tr><td>戴尔u2723qe显示器</td><td>¥479,363.00</td><td>50</td><td>4.8%</td><td>51.4%</td></tr><tr><td>戴森v12吸尘器</td><td>¥470,470.00</td><td>54</td><td>4.7%</td><td>56.2%</td></tr><tr><td>小米电视65寸</td><td>¥464,845.00</td><td>51</td><td>4.7%</td><td>60.8%</td></tr><tr><td>小米1412+256g</td><td>¥459,993.00</td><td>33</td><td>4.6%</td><td>65.4%</td></tr><tr><td>海尔冰箱501l</td><td>¥459,885.00</td><td>35</td><td>4.6%</td><td>70.0%</td></tr></tbody></table></div>
+<h2>口径与局限</h2><ul><li>数据由固定随机种子生成，不代表任何真实企业、消费者或经营表现。</li><li>数据仅包含订单明细，无法计算UV、转化率、毛利率、ROI或因果效果。</li><li>缺失单价或数量的订单无法重算金额，相关GMV口径会排除这些记录。</li><li>RFM结果仅用于演示分析流程，不应直接转化为真实营销策略。</li></ul>
+<footer>生成日期：2026-09-16。报告仅展示模拟数据分析流程，不构成真实经营判断。</footer>
+</main></body></html>

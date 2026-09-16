@@ -1,0 +1,34 @@
+{
+  "dataset_type": "synthetic",
+  "raw": {
+    "rows": 3090,
+    "unique_orders": 3000,
+    "duplicate_rows": 90,
+    "missing_dates": 46,
+    "missing_or_unparseable_prices": 140,
+    "missing_quantities": 57,
+    "zero_quantities": 61,
+    "negative_quantities": 284,
+    "missing_amounts": 335,
+    "checkable_amount_mismatches": 59,
+    "missing_channels": 32,
+    "missing_product_ids": 66,
+    "missing_user_ids": 62,
+    "missing_provinces": 33
+  },
+  "rows_after_deduplication": 3000,
+  "duplicates_removed": 90,
+  "dates_unparseable_after_deduplication": 45,
+  "prices_unparseable_after_deduplication": 138,
+  "amounts_unresolvable_after_recalculation": 187,
+  "valid_orders": 2409,
+  "refund_or_cancel_orders": 591,
+  "rules": [
+    "Deduplicate by order ID and keep the first row.",
+    "Normalize mixed date formats; preserve unparseable dates as missing.",
+    "Remove currency symbols and thousands separators from unit prices.",
+    "Recalculate amount as unit price multiplied by quantity; preserve original amount.",
+    "Keep refunded and cancelled rows but exclude them from valid-order KPIs.",
+    "Fill missing dimensions with 未知 without inventing values."
+  ]
+}
