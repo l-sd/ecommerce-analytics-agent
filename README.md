@@ -14,7 +14,7 @@
 
 ![仪表盘预览](docs/dashboard-preview.png)
 
-> **在线链接待填入** —— 部署到 Streamlit Community Cloud 后，请把地址替换到这一行。
+> **在线体验：** <https://b3a5c4dfd1bf4fdfa309ce85d78bb267.sg.agentos-app.run> —— 免安装，直接打开即可上传数据、按日期与渠道筛选、下钻 RFM 分层并下载客户明细。
 
 本地启动方式见[快速运行](#快速运行)。
 
