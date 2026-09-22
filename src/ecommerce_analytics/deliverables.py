@@ -11,6 +11,8 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+from .visuals import WIDE_FIGURE_FILENAMES
+
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -142,8 +144,15 @@ FIGURE_CAPTIONS = [
     ("fig1_monthly_trend.png", "图 1 · 月度 GMV 与订单数趋势", "看时间：生意在变好还是变差，波动来自单量还是客单价。"),
     ("fig2_channel_structure.png", "图 2 · 渠道 GMV 占比", "看渠道：钱主要从哪来，哪个渠道的单笔价值更高。"),
     ("fig3_product_pareto.png", "图 3 · 商品 GMV 集中度", "看商品：多少 SKU 贡献了 80% 的 GMV，备货该向哪倾斜。"),
-    ("fig4_rfm_matrix.png", "图 4 · RFM 客户分层", "看客户：哪一类人最该优先维护或挽回。"),
+    ("fig4_rfm_profile.png", "图 4 · RFM 分层画像", "看客户：哪一类人最该优先维护或挽回。"),
 ]
+
+# The RFM profile is a three-panel small multiple and the pareto chart carries a
+# long rotated SKU axis, so both are roughly twice as wide as the other two. In a
+# two-column grid they would be scaled down until their labels stop being legible,
+# so they get a full-width row each. The set is defined in ``visuals`` because the
+# dashboard has to apply the same rule.
+WIDE_FIGURES = WIDE_FIGURE_FILENAMES
 
 
 def _embed_figure(path: Path) -> str:
@@ -160,8 +169,9 @@ def _figure_section(figures: dict[str, Path] | None) -> str:
         path = figures.get(filename)
         if path is None or not Path(path).exists():
             continue
+        extra = " wide" if filename in WIDE_FIGURES else ""
         cards.append(
-            f'<figure class="chart"><img src="{_embed_figure(Path(path))}" alt="{html.escape(title)}">'
+            f'<figure class="chart{extra}"><img src="{_embed_figure(Path(path))}" alt="{html.escape(title)}">'
             f"<figcaption><b>{html.escape(title)}</b><span>{html.escape(caption)}</span></figcaption></figure>"
         )
     if not cards:
@@ -204,7 +214,7 @@ h1{{font-size:34px;line-height:1.2;margin:0 0 8px}}h2{{font-size:21px;margin:34p
 .bar-row{{display:grid;grid-template-columns:78px 1fr 110px;gap:10px;align-items:center;margin:10px 0}}.track{{height:12px;background:#edf1ef}}.track i{{display:block;height:100%;background:var(--green)}}
 table{{width:100%;border-collapse:collapse;background:white;font-size:13px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}}th{{background:var(--mint);color:var(--green)}}th:first-child,td:first-child{{text-align:left}}
 code{{background:#eef1ef;padding:2px 5px;border-radius:3px}}ul{{padding-left:20px;color:var(--muted)}}footer{{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}}
-.charts{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}.chart{{margin:0;background:white;border:1px solid var(--line);padding:12px;border-radius:6px}}
+.charts{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}.chart{{margin:0;background:white;border:1px solid var(--line);padding:12px;border-radius:6px}}.chart.wide{{grid-column:1/-1}}
 .chart img{{width:100%;height:auto;display:block}}.chart figcaption{{margin-top:8px;font-size:12px;color:var(--muted)}}
 .chart figcaption b{{display:block;color:var(--ink);font-size:13px;margin-bottom:2px}}
 @media(max-width:800px){{.kpis{{grid-template-columns:repeat(2,1fr)}}.grid{{grid-template-columns:1fr}}.charts{{grid-template-columns:1fr}}main{{padding:26px 14px}}h1{{font-size:28px}}}}

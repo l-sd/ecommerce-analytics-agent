@@ -339,12 +339,18 @@
       "skus_for_80_percent": 13,
       "top1_share": 0.1423
     },
-    "rfm_matrix": {
+    "rfm_profile": {
       "customer_count": 200,
       "segment_count": 4,
       "top_gmv_segment": "一般客户",
       "top_gmv_share": 0.3717,
-      "top_gmv_customers": 83
+      "top_gmv_customers": 83,
+      "longest_recency_segment": "重要挽留客户",
+      "longest_recency_days": 67.4,
+      "highest_frequency_segment": "重要价值客户",
+      "highest_frequency": 13.8,
+      "highest_monetary_segment": "重要价值客户",
+      "highest_monetary": 65818.7
     }
   }
 }

@@ -47,12 +47,12 @@ from ecommerce_analytics.pipeline import (
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "synthetic_orders.csv"
 UPLOAD_TYPES = ["csv", "xlsx"]
-CHART_ORDER = ["monthly_trend", "channel_structure", "product_pareto", "rfm_matrix"]
+CHART_ORDER = ["monthly_trend", "channel_structure", "product_pareto", "rfm_profile"]
 CHART_TITLES = {
     "monthly_trend": "图 1 · 月度 GMV 与订单数趋势",
     "channel_structure": "图 2 · 渠道 GMV 占比",
     "product_pareto": "图 3 · 商品 GMV 集中度",
-    "rfm_matrix": "图 4 · RFM 客户分层",
+    "rfm_profile": "图 4 · RFM 分层画像",
 }
 SEGMENT_ORDER = ["重要价值客户", "重要挽留客户", "潜力客户", "一般客户"]
 
@@ -148,7 +148,7 @@ TAKEAWAYS = {
     "monthly_trend": monthly_takeaway,
     "channel_structure": channel_takeaway,
     "product_pareto": pareto_takeaway,
-    "rfm_matrix": rfm_takeaway,
+    "rfm_profile": rfm_takeaway,
 }
 
 
@@ -301,10 +301,10 @@ def main() -> None:
     # --- charts --------------------------------------------------------------
     st.subheader("分析图表")
     charts = render_charts(analysis, filtered)
-    for row_start in range(0, len(CHART_ORDER), 2):
-        pair = CHART_ORDER[row_start : row_start + 2]
-        chart_columns = st.columns(len(pair))
-        for column, key in zip(chart_columns, pair, strict=True):
+    # Wide charts get a row to themselves; see visuals.WIDE_FIGURE_KEYS.
+    for row in visuals.chart_rows(CHART_ORDER):
+        chart_columns = st.columns(len(row))
+        for column, key in zip(chart_columns, row, strict=True):
             with column:
                 st.image(charts[key]["png"], width="stretch")
                 st.markdown(f"**{CHART_TITLES[key]}**")

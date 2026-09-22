@@ -12,13 +12,14 @@ The four figures follow one reading order -- time, channel, product, customer:
 2. :func:`channel_share_ring` -- where does the revenue come from, and which
    channel is most efficient per order?
 3. :func:`product_pareto` -- how concentrated is revenue across SKUs?
-4. :func:`rfm_scatter` -- which customer groups deserve attention first?
+4. :func:`rfm_segment_profile` -- which customer groups deserve attention first?
 """
 
 from __future__ import annotations
 
 import io
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -61,8 +62,41 @@ FIGURE_FILENAMES = {
     "monthly_trend": "fig1_monthly_trend.png",
     "channel_structure": "fig2_channel_structure.png",
     "product_pareto": "fig3_product_pareto.png",
-    "rfm_matrix": "fig4_rfm_matrix.png",
+    "rfm_profile": "fig4_rfm_profile.png",
 }
+
+# Charts about twice as wide as the others: the pareto chart carries a long
+# rotated SKU axis, and the RFM profile is a three-panel small multiple. Both the
+# HTML report and the dashboard give these a full-width row, because halving them
+# in a two-column layout shrinks their labels past legibility. Defined once here so
+# the two renderers cannot drift apart.
+WIDE_FIGURE_KEYS = {"product_pareto", "rfm_profile"}
+
+WIDE_FIGURE_FILENAMES = {FIGURE_FILENAMES[key] for key in WIDE_FIGURE_KEYS}
+
+
+def chart_rows(order: Iterable[str]) -> list[list[str]]:
+    """Group figure keys into display rows, giving wide charts a row of their own.
+
+    Narrow charts pair up two per row; a wide chart flushes whatever pair was
+    still being collected, so the reading order is never reshuffled.
+    """
+    rows: list[list[str]] = []
+    pending: list[str] = []
+    for key in order:
+        if key in WIDE_FIGURE_KEYS:
+            if pending:
+                rows.append(pending)
+                pending = []
+            rows.append([key])
+        else:
+            pending.append(key)
+            if len(pending) == 2:
+                rows.append(pending)
+                pending = []
+    if pending:
+        rows.append(pending)
+    return rows
 
 _FONT_CACHE: str | None = None
 
@@ -121,8 +155,14 @@ def _get_pyplot():
     return plt
 
 
-def _style_axes(ax) -> None:
-    ax.grid(axis="y", color="#e3e7e5", linewidth=0.7)
+def _style_axes(ax, *, grid_axis: str = "y") -> None:
+    """Apply the shared axis treatment.
+
+    ``grid_axis`` names the value axis: vertical-column charts read against y,
+    horizontal bar charts against x. Getting this wrong leaves grid lines running
+    between the bars instead of behind them.
+    """
+    ax.grid(axis=grid_axis, color="#e3e7e5", linewidth=0.7)
     ax.set_axisbelow(True)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
@@ -343,53 +383,81 @@ def product_pareto(analysis: dict[str, Any], top_n: int = 15):
     return fig, summary
 
 
-def rfm_scatter(cleaned: pd.DataFrame):
-    """Customer scatter of recency against frequency, sized by monetary value.
+def rfm_segment_profile(cleaned: pd.DataFrame):
+    """Customer tiers compared across R, F and M as three small-multiple panels.
+
+    This replaces an earlier recency-vs-frequency bubble scatter. With 200
+    customers the bubbles collapsed into an overlapping mass, and because the tier
+    rule is a grid over R and F (with M only as a tie-breaker) the scatter could
+    not show *why* any given customer sat in a given tier. Aggregating to one bar
+    per tier per metric removes the overlap and puts the differences on an axis
+    that can actually be read.
 
     Uses the same :func:`customer_rfm_table` as the RFM summary so that segment
-    colours here always match the ``rfm`` table in ``analysis.json``.
+    labels, ordering and colours always match the ``rfm`` table in
+    ``analysis.json``.
     """
     plt = _get_pyplot()
     valid = cleaned[cleaned["是否有效订单"] & cleaned["金额"].notna()]
     customers = customer_rfm_table(valid)
     if customers.empty:
-        return _empty_figure("RFM 客户分层", "无可用客户数据"), {"summary": "无可用客户数据"}
+        return _empty_figure("RFM 分层画像", "无可用客户数据"), {"summary": "无可用客户数据"}
 
-    fig, ax = plt.subplots(figsize=(6.6, 4.2), dpi=160)
-    monetary = customers["monetary"].astype(float)
-    scale = 900 / monetary.max() if monetary.max() else 1
-    for segment in ["重要价值客户", "重要挽留客户", "潜力客户", "一般客户"]:
-        group = customers[customers["segment"] == segment]
-        if group.empty:
-            continue
-        ax.scatter(
-            group["recency_days"].astype(float),
-            group["frequency"].astype(float),
-            s=(group["monetary"].astype(float) * scale).clip(lower=18),
-            color=SEGMENT_COLORS[segment],
-            alpha=0.72,
-            edgecolors="white",
-            linewidths=0.7,
-            label=f"{segment}（{len(group)} 人）",
-        )
-    ax.set_xlabel("R：距最近一次购买天数（越左越活跃）", fontsize=10, color=INK)
-    ax.set_ylabel("F：购买次数", fontsize=10, color=INK)
-    _style_axes(ax)
-    ax.grid(axis="x", color="#eef1ef", linewidth=0.7)
-    ax.legend(loc="upper right", fontsize=9, frameon=False)
-    ax.set_title("RFM 客户分层：活跃度 × 购买频次（点大小＝金额）", fontsize=12, color=INK, pad=12)
+    profile = customers.groupby("segment").agg(
+        customers=("用户ID", "count"),
+        gmv=("monetary", "sum"),
+        recency=("recency_days", "mean"),
+        frequency=("frequency", "mean"),
+        monetary=("monetary", "mean"),
+    )
+    profile["customer_share"] = profile["customers"] / profile["customers"].sum()
+    profile["gmv_share"] = profile["gmv"] / profile["gmv"].sum()
+    # Ascending, because ``barh`` draws index 0 at the bottom -- so the largest
+    # contributor ends up at the top where it is read first.
+    profile = profile.sort_values("gmv_share")
 
-    ranked = customers.groupby("segment").agg(customers=("用户ID", "count"), gmv=("monetary", "sum"))
-    ranked["customer_share"] = ranked["customers"] / ranked["customers"].sum()
-    ranked["gmv_share"] = ranked["gmv"] / ranked["gmv"].sum()
-    top_priority = ranked.sort_values("gmv_share", ascending=False).index[0]
+    panels = [
+        ("recency", "R · 平均距最近购买（天）", "越短越活跃"),
+        ("frequency", "F · 平均购买次数（次）", "越多越忠诚"),
+        ("monetary", "M · 平均消费金额（元）", "越高越有价值"),
+    ]
+    colours = [SEGMENT_COLORS[segment] for segment in profile.index]
 
+    fig, axes = plt.subplots(1, len(panels), figsize=(11.4, 3.5), dpi=160)
+    positions = range(len(profile))
+    for index, (ax, (column, title, hint)) in enumerate(zip(axes, panels, strict=True)):
+        values = profile[column].astype(float)
+        ax.barh(list(positions), values, height=0.62, color=colours, zorder=3)
+        span = float(values.max()) if values.max() else 1.0
+        for row, value in enumerate(values):
+            label = f"{value:.1f}" if column == "frequency" else f"{value:,.0f}"
+            ax.text(value + span * 0.035, row, label, va="center", fontsize=8.6, color=INK)
+        ax.set_yticks(list(positions))
+        # Only the left panel carries tier names; the rows line up across panels.
+        ax.set_yticklabels(profile.index if index == 0 else [""] * len(profile), fontsize=9.5, color=INK)
+        ax.set_xlim(0, span * 1.3)
+        ax.set_title(title, fontsize=10.5, color=INK, pad=8)
+        ax.set_xlabel(hint, fontsize=8.5, color="#66736e")
+        _style_axes(ax, grid_axis="x")
+
+    fig.suptitle("RFM 分层画像：三个维度上的差异", fontsize=12, color=INK, y=1.06)
+
+    ranked = profile.sort_values("gmv_share", ascending=False)
+    top_priority = str(ranked.index[0])
     summary = {
         "customer_count": int(len(customers)),
         "segment_count": int(customers["segment"].nunique()),
         "top_gmv_segment": top_priority,
         "top_gmv_share": round(float(ranked.loc[top_priority, "gmv_share"]), 4),
         "top_gmv_customers": int(ranked.loc[top_priority, "customers"]),
+        # Surfaced because the chart's whole point is the gap between tiers on
+        # these axes; the report quotes them.
+        "longest_recency_segment": str(profile["recency"].idxmax()),
+        "longest_recency_days": round(float(profile["recency"].max()), 1),
+        "highest_frequency_segment": str(profile["frequency"].idxmax()),
+        "highest_frequency": round(float(profile["frequency"].max()), 1),
+        "highest_monetary_segment": str(profile["monetary"].idxmax()),
+        "highest_monetary": round(float(profile["monetary"].max()), 1),
     }
     return fig, summary
 
@@ -399,7 +467,7 @@ def _iter_figures(analysis: dict[str, Any], cleaned: pd.DataFrame):
     yield "monthly_trend", *gmv_monthly_trend(analysis)
     yield "channel_structure", *channel_share_ring(analysis)
     yield "product_pareto", *product_pareto(analysis)
-    yield "rfm_matrix", *rfm_scatter(cleaned)
+    yield "rfm_profile", *rfm_segment_profile(cleaned)
 
 
 def build_all_figures(

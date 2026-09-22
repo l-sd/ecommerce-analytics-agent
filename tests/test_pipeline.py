@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import tempfile
 import unittest
 from pathlib import Path
@@ -7,6 +8,8 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 from ecommerce_analytics.deliverables import (
+    FIGURE_CAPTIONS,
+    WIDE_FIGURES,
     validate_outputs,
     write_excel,
     write_html,
@@ -64,6 +67,30 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(workbook["清洗明细"]["I2"].value, '=IF(OR(F2="",G2=""),"",F2*G2)')
             self.assertEqual(workbook["清洗明细"]["M2"].value, '=IF(OR(L2="已退款",L2="已取消"),"否","是")')
             workbook.close()
+
+    def test_wide_charts_span_both_columns_in_the_report(self) -> None:
+        """The wide charts need a full-width row to stay legible.
+
+        Squeezed into one column of the two-column chart grid the RFM profile and
+        the pareto chart are scaled down until their labels can no longer be read,
+        so both have to carry the ``wide`` class.
+        """
+        one_pixel_png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            figures = {}
+            for filename, *_rest in FIGURE_CAPTIONS:
+                path = output / filename
+                path.write_bytes(one_pixel_png)
+                figures[filename] = path
+            write_html(output / "report.html", self.analysis, self.log, figures=figures)
+            report = (output / "report.html").read_text(encoding="utf-8")
+
+        self.assertIn(".chart.wide{grid-column:1/-1}", report)
+        self.assertEqual(report.count('<figure class="chart wide">'), len(WIDE_FIGURES))
+        self.assertEqual(report.count('<figure class="chart'), len(FIGURE_CAPTIONS))
 
 
 if __name__ == "__main__":

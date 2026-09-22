@@ -7,6 +7,7 @@ mix from taking the whole pipeline down.
 
 from __future__ import annotations
 
+import matplotlib
 import pandas as pd
 import pytest
 
@@ -150,13 +151,138 @@ def test_empty_analysis_returns_a_placeholder_instead_of_raising(builder, payloa
     assert "summary" in summary
 
 
-def test_rfm_scatter_handles_no_customers():
+def test_rfm_segment_profile_handles_no_customers():
     empty = pd.DataFrame(
         {"是否有效订单": [], "金额": [], "用户ID": [], "订单号": [], "日期": pd.to_datetime([])}
     )
-    figure, summary = visuals.rfm_scatter(empty)
+    figure, summary = visuals.rfm_segment_profile(empty)
     assert figure is not None
     assert "summary" in summary
+
+
+# --- RFM segment profile -----------------------------------------------------
+
+# Means chosen so every tier is distinguishable on every axis, which lets the
+# assertions below name a specific expected value instead of just checking shape.
+_PROFILE_ROWS = [
+    ("重要价值客户", 8.0, 14.0, 65000.0),
+    ("重要挽留客户", 67.0, 10.0, 55000.0),
+    ("潜力客户", 15.0, 8.0, 30000.0),
+    ("一般客户", 34.0, 11.0, 43000.0),
+]
+
+
+def _stub_customer_table(monkeypatch) -> pd.DataFrame:
+    """Pin the per-customer table so the chart is tested, not the tercile maths.
+
+    Building a raw frame that lands on all four tiers is brittle -- the tier rule
+    reads three separate terciles plus a tie-breaker -- so the seam that matters
+    here is "given these customers, is the chart right".
+    """
+    frame = pd.DataFrame(
+        [
+            {
+                "用户ID": f"U{index}",
+                "segment": segment,
+                "recency_days": recency,
+                "frequency": frequency,
+                "monetary": monetary,
+            }
+            for index, (segment, recency, frequency, monetary) in enumerate(_PROFILE_ROWS)
+        ]
+    )
+    monkeypatch.setattr(visuals, "customer_rfm_table", lambda _valid: frame)
+    return frame
+
+
+def test_rfm_profile_draws_one_panel_per_metric(monkeypatch):
+    """R, F and M each get their own axis -- the layout must not collapse."""
+    _stub_customer_table(monkeypatch)
+    figure, _summary = visuals.rfm_segment_profile(_cleaned_frame(6))
+
+    assert len(figure.axes) == 3
+    for ax in figure.axes:
+        assert len(ax.patches) == len(_PROFILE_ROWS)
+
+
+def test_rfm_profile_plots_segment_means_in_gmv_order(monkeypatch):
+    """Rows run smallest to largest GMV share, so the top row is the priority tier."""
+    _stub_customer_table(monkeypatch)
+    figure, summary = visuals.rfm_segment_profile(_cleaned_frame(6))
+
+    expected_order = ["潜力客户", "一般客户", "重要挽留客户", "重要价值客户"]
+    labels = [text.get_text() for text in figure.axes[0].get_yticklabels()]
+    assert labels == expected_order
+
+    # Panel 1 is R, so the bar widths are the mean recency per tier.
+    widths = [patch.get_width() for patch in figure.axes[0].patches]
+    assert widths == [15.0, 34.0, 67.0, 8.0]
+
+    assert summary["top_gmv_segment"] == "重要价值客户"
+    assert summary["longest_recency_segment"] == "重要挽留客户"
+    assert summary["longest_recency_days"] == 67.0
+    assert summary["highest_frequency_segment"] == "重要价值客户"
+    assert summary["highest_monetary_segment"] == "重要价值客户"
+
+
+def test_rfm_profile_bar_colours_follow_the_segment_map(monkeypatch):
+    """A tier keeps its colour across all three panels and matches the summary table."""
+    _stub_customer_table(monkeypatch)
+    figure, _summary = visuals.rfm_segment_profile(_cleaned_frame(6))
+
+    expected = [
+        matplotlib.colors.to_rgba(visuals.SEGMENT_COLORS[segment])
+        for segment, *_ in sorted(_PROFILE_ROWS, key=lambda row: row[3])
+    ]
+    for ax in figure.axes:
+        assert [patch.get_facecolor() for patch in ax.patches] == expected
+
+
+def test_style_axes_grid_follows_the_value_axis():
+    """Horizontal bars read against x, so the grid has to move with them.
+
+    Regression: a fixed y-axis grid drew lines between the bars instead of behind
+    them once the RFM chart switched from a scatter to horizontal bars.
+    """
+    figure = visuals.matplotlib.figure.Figure()
+    ax = figure.add_subplot(111)
+    visuals._style_axes(ax, grid_axis="x")
+
+    assert all(line.get_visible() for line in ax.xaxis.get_gridlines())
+    assert not any(line.get_visible() for line in ax.yaxis.get_gridlines())
+
+
+# --- chart row layout --------------------------------------------------------
+
+
+def test_wide_figures_resolve_to_the_expected_filenames():
+    """The report looks the rule up by filename, the dashboard by key."""
+    assert visuals.WIDE_FIGURE_FILENAMES == {"fig3_product_pareto.png", "fig4_rfm_profile.png"}
+    assert all(key in visuals.FIGURE_FILENAMES for key in visuals.WIDE_FIGURE_KEYS)
+
+
+def test_chart_rows_gives_wide_charts_a_row_of_their_own():
+    """Wide charts must not be halved into a pair, and order must be preserved."""
+    order = ["monthly_trend", "channel_structure", "product_pareto", "rfm_profile"]
+    assert visuals.chart_rows(order) == [
+        ["monthly_trend", "channel_structure"],
+        ["product_pareto"],
+        ["rfm_profile"],
+    ]
+
+
+def test_chart_rows_flushes_a_pending_pair_before_a_wide_chart():
+    """An odd narrow chart must not be stranded behind a wide one."""
+    order = ["monthly_trend", "product_pareto", "channel_structure"]
+    assert visuals.chart_rows(order) == [
+        ["monthly_trend"],
+        ["product_pareto"],
+        ["channel_structure"],
+    ]
+
+
+def test_chart_rows_handles_an_empty_order():
+    assert visuals.chart_rows([]) == []
 
 
 # --- monthly trend -----------------------------------------------------------
