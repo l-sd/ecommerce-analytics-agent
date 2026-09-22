@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import html
 import json
 from pathlib import Path
@@ -137,7 +138,43 @@ def _write_table_sheet(workbook: Workbook, name: str, records: list[dict[str, An
     sheet.freeze_panes = "A2"
 
 
-def write_html(path: Path, analysis: dict[str, Any], cleaning_log: dict[str, Any]) -> None:
+FIGURE_CAPTIONS = [
+    ("fig1_monthly_trend.png", "图 1 · 月度 GMV 与订单数趋势", "看时间：生意在变好还是变差，波动来自单量还是客单价。"),
+    ("fig2_channel_structure.png", "图 2 · 渠道 GMV 占比", "看渠道：钱主要从哪来，哪个渠道的单笔价值更高。"),
+    ("fig3_product_pareto.png", "图 3 · 商品 GMV 集中度", "看商品：多少 SKU 贡献了 80% 的 GMV，备货该向哪倾斜。"),
+    ("fig4_rfm_matrix.png", "图 4 · RFM 客户分层", "看客户：哪一类人最该优先维护或挽回。"),
+]
+
+
+def _embed_figure(path: Path) -> str:
+    """Base64-encode a PNG so the report stays a single offline file."""
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
+
+def _figure_section(figures: dict[str, Path] | None) -> str:
+    if not figures:
+        return ""
+    cards = []
+    for filename, title, caption in FIGURE_CAPTIONS:
+        path = figures.get(filename)
+        if path is None or not Path(path).exists():
+            continue
+        cards.append(
+            f'<figure class="chart"><img src="{_embed_figure(Path(path))}" alt="{html.escape(title)}">'
+            f"<figcaption><b>{html.escape(title)}</b><span>{html.escape(caption)}</span></figcaption></figure>"
+        )
+    if not cards:
+        return ""
+    return f'<h2>分析图表</h2><section class="charts">{"".join(cards)}</section>'
+
+
+def write_html(
+    path: Path,
+    analysis: dict[str, Any],
+    cleaning_log: dict[str, Any],
+    figures: dict[str, Path] | None = None,
+) -> None:
     kpi = analysis["kpi"]
     channel_rows = _table_rows(analysis["channel"], ["渠道", "gmv", "orders", "aov", "gmv_share"])
     product_rows = _table_rows(
@@ -152,6 +189,7 @@ def write_html(path: Path, analysis: dict[str, Any], cleaning_log: dict[str, Any
     )
     limitations = "".join(f"<li>{html.escape(item)}</li>" for item in analysis["limitations"])
     validation_values = analysis["validation_values"]
+    figures_html = _figure_section(figures)
     document = f"""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>电商订单分析报告（模拟数据）</title><style>
@@ -166,7 +204,10 @@ h1{{font-size:34px;line-height:1.2;margin:0 0 8px}}h2{{font-size:21px;margin:34p
 .bar-row{{display:grid;grid-template-columns:78px 1fr 110px;gap:10px;align-items:center;margin:10px 0}}.track{{height:12px;background:#edf1ef}}.track i{{display:block;height:100%;background:var(--green)}}
 table{{width:100%;border-collapse:collapse;background:white;font-size:13px}}th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}}th{{background:var(--mint);color:var(--green)}}th:first-child,td:first-child{{text-align:left}}
 code{{background:#eef1ef;padding:2px 5px;border-radius:3px}}ul{{padding-left:20px;color:var(--muted)}}footer{{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}}
-@media(max-width:800px){{.kpis{{grid-template-columns:repeat(2,1fr)}}.grid{{grid-template-columns:1fr}}main{{padding:26px 14px}}h1{{font-size:28px}}}}
+.charts{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}.chart{{margin:0;background:white;border:1px solid var(--line);padding:12px;border-radius:6px}}
+.chart img{{width:100%;height:auto;display:block}}.chart figcaption{{margin-top:8px;font-size:12px;color:var(--muted)}}
+.chart figcaption b{{display:block;color:var(--ink);font-size:13px;margin-bottom:2px}}
+@media(max-width:800px){{.kpis{{grid-template-columns:repeat(2,1fr)}}.grid{{grid-template-columns:1fr}}.charts{{grid-template-columns:1fr}}main{{padding:26px 14px}}h1{{font-size:28px}}}}
 </style></head><body><main>
 <header><span class="notice">模拟数据 / Synthetic data</span><h1>电商订单分析自动化报告</h1>
 <p>从数据体检、清洗、KPI、渠道/商品分析、RFM分层到Excel/HTML交付与验证的可复现工作流。</p></header>
@@ -177,6 +218,7 @@ code{{background:#eef1ef;padding:2px 5px;border-radius:3px}}ul{{padding-left:20p
 <div class="kpi"><span>有效客户</span><strong>{kpi["customers"]:,}</strong></div>
 <div class="kpi"><span>连带率</span><strong>{kpi["items_per_order"]:.2f}</strong></div>
 </section>
+{figures_html}
 <section class="grid"><div class="panel"><h2>渠道GMV</h2>{bars}</div><div class="panel"><h2>数据体检</h2>
 <p>原始 {cleaning_log["raw"]["rows"]:,} 行，识别重复 {cleaning_log["raw"]["duplicate_rows"]} 行、日期缺失 {cleaning_log["raw"]["missing_dates"]} 条、金额不一致 {cleaning_log["raw"]["checkable_amount_mismatches"]} 条。</p>
 <p>去重后 {cleaning_log["rows_after_deduplication"]:,} 行；金额按 <code>单价 × 数量</code> 重算，并保留原金额追溯。</p>
@@ -218,6 +260,7 @@ def validate_outputs(
     cleaned: pd.DataFrame,
     analysis: dict[str, Any],
     cleaning_log: dict[str, Any],
+    figures: dict[str, Path] | None = None,
 ) -> dict[str, Any]:
     values = analysis["validation_values"]
     checks: list[dict[str, Any]] = []
@@ -257,8 +300,17 @@ def validate_outputs(
 
     html_text = (output_dir / "report.html").read_text(encoding="utf-8")
     required_sections = ["模拟数据", "渠道分析", "月度趋势", "商品TOP10", "口径与局限"]
+    if figures:
+        required_sections.append("分析图表")
     missing_sections = [section for section in required_sections if section not in html_text]
     add("HTML report structure", not missing_sections, f"missing: {missing_sections}")
+
+    figure_paths = [Path(path) for path in (figures or {}).values() if path is not None]
+    if figure_paths:
+        missing_figures = [path.name for path in figure_paths if not path.exists()]
+        add("chart files written", not missing_figures, f"{len(figure_paths)} charts; missing: {missing_figures}")
+        embedded = html_text.count("data:image/png;base64,")
+        add("charts embedded in HTML", embedded >= len(figure_paths), f"{embedded} embedded figures")
 
     sampled = cleaned.sample(min(5, len(cleaned)), random_state=42)
     sample_failures = 0
@@ -284,7 +336,8 @@ def validate_outputs(
             "report.html",
             "validation.json",
             "validation.md",
-        ],
+        ]
+        + [path.name for path in figure_paths],
     }
     return result
 
