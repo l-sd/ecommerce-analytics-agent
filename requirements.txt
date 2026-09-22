@@ -1,4 +1,5 @@
 pandas>=3.0,<4
-numpy>=2.3,<3
+numpy>=2.2,<3
 openpyxl>=3.1,<4
-
+matplotlib>=3.9,<4
+streamlit>=1.49,<2
