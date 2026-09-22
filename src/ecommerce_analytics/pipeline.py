@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import re
 from pathlib import Path
 from typing import Any
@@ -7,24 +8,39 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-
 REQUIRED_COLUMNS = [
     "订单号", "日期", "渠道", "商品ID", "商品名称", "单价", "数量", "金额", "用户ID", "收货省份", "订单状态"
 ]
 INVALID_STATUSES = {"已退款", "已取消"}
 
 
-def read_orders(path: Path) -> pd.DataFrame:
-    if path.suffix.lower() == ".csv":
-        frame = pd.read_csv(path, encoding="utf-8-sig", dtype={"订单号": "string"})
-    elif path.suffix.lower() in {".xlsx", ".xls"}:
-        frame = pd.read_excel(path, sheet_name="订单明细", dtype={"订单号": "string"})
-    else:
-        raise ValueError("Input must be a CSV or Excel file.")
+def _select_required_columns(frame: pd.DataFrame) -> pd.DataFrame:
     missing = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing:
         raise ValueError(f"Missing required columns: {', '.join(missing)}")
     return frame[REQUIRED_COLUMNS].copy()
+
+
+def read_orders_stream(stream: io.IOBase, suffix: str) -> pd.DataFrame:
+    """Read orders from an open file or in-memory upload.
+
+    Split out from :func:`read_orders` so the dashboard can hand over the bytes
+    of an uploaded file without first writing a temporary file to disk.
+    """
+    suffix = suffix.lower()
+    if suffix == ".csv":
+        frame = pd.read_csv(stream, encoding="utf-8-sig", dtype={"订单号": "string"})
+    elif suffix in {".xlsx", ".xls"}:
+        frame = pd.read_excel(stream, sheet_name="订单明细", dtype={"订单号": "string"})
+    else:
+        raise ValueError("Input must be a CSV or Excel file.")
+    return _select_required_columns(frame)
+
+
+def read_orders(path: Path) -> pd.DataFrame:
+    path = Path(path)
+    with path.open("rb") as handle:
+        return read_orders_stream(handle, path.suffix)
 
 
 def numeric_price(series: pd.Series) -> pd.Series:
@@ -107,31 +123,57 @@ def normalize_product_name(value: object) -> str:
     return re.sub(r"\s+", "", str(value)).lower()
 
 
-def _rfm_segments(valid: pd.DataFrame) -> pd.DataFrame:
+def _tercile(series: pd.Series, ascending: bool = True) -> pd.Series:
+    """Split a numeric series into three ranked tiers labelled 1-3.
+
+    Ranks are computed first so ``qcut`` never sees duplicate bin edges (which
+    raises on tied values). With fewer than three customers every row is tier 1.
+    """
+    if len(series) < 3:
+        return pd.Series(1, index=series.index, dtype="int64")
+    ranks = series.rank(method="first", ascending=ascending)
+    return pd.qcut(ranks, 3, labels=[1, 2, 3]).astype(int)
+
+
+def _segment_label(row: pd.Series) -> str:
+    if row["R"] == 3 and row["F"] >= 2 and row["M"] >= 2:
+        return "重要价值客户"
+    if row["R"] == 1 and (row["F"] >= 2 or row["M"] >= 2):
+        return "重要挽留客户"
+    if row["R"] >= 2 and row["F"] == 1:
+        return "潜力客户"
+    return "一般客户"
+
+
+RFM_CUSTOMER_COLUMNS = [
+    "用户ID", "last_order", "frequency", "monetary", "recency_days", "R", "F", "M", "segment",
+]
+
+
+def customer_rfm_table(valid: pd.DataFrame) -> pd.DataFrame:
+    """Per-customer RFM table.
+
+    Shared by the RFM summary and the RFM scatter figure so that both always
+    agree on tier boundaries and segment labels.
+    """
     customers = valid[(valid["用户ID"] != "未知") & valid["日期"].notna()].groupby("用户ID").agg(
         last_order=("日期", "max"), frequency=("订单号", "nunique"), monetary=("金额", "sum")
     ).reset_index()
     if customers.empty:
-        return pd.DataFrame(columns=["segment", "customers", "gmv", "customer_share", "gmv_share"])
+        return pd.DataFrame(columns=RFM_CUSTOMER_COLUMNS)
     cutoff = customers["last_order"].max()
     customers["recency_days"] = (cutoff - customers["last_order"]).dt.days
-    r_rank = customers["recency_days"].rank(method="first", ascending=False)
-    f_rank = customers["frequency"].rank(method="first")
-    m_rank = customers["monetary"].rank(method="first")
-    customers["R"] = pd.qcut(r_rank, 3, labels=[1, 2, 3]).astype(int)
-    customers["F"] = pd.qcut(f_rank, 3, labels=[1, 2, 3]).astype(int)
-    customers["M"] = pd.qcut(m_rank, 3, labels=[1, 2, 3]).astype(int)
+    customers["R"] = _tercile(customers["recency_days"], ascending=False)
+    customers["F"] = _tercile(customers["frequency"])
+    customers["M"] = _tercile(customers["monetary"])
+    customers["segment"] = customers.apply(_segment_label, axis=1)
+    return customers[RFM_CUSTOMER_COLUMNS]
 
-    def label(row: pd.Series) -> str:
-        if row["R"] == 3 and row["F"] >= 2 and row["M"] >= 2:
-            return "重要价值客户"
-        if row["R"] == 1 and (row["F"] >= 2 or row["M"] >= 2):
-            return "重要挽留客户"
-        if row["R"] >= 2 and row["F"] == 1:
-            return "潜力客户"
-        return "一般客户"
 
-    customers["segment"] = customers.apply(label, axis=1)
+def _rfm_segments(valid: pd.DataFrame) -> pd.DataFrame:
+    customers = customer_rfm_table(valid)
+    if customers.empty:
+        return pd.DataFrame(columns=["segment", "customers", "gmv", "customer_share", "gmv_share"])
     summary = customers.groupby("segment").agg(customers=("用户ID", "count"), gmv=("monetary", "sum")).reset_index()
     summary["customer_share"] = summary["customers"] / summary["customers"].sum()
     summary["gmv_share"] = summary["gmv"] / summary["gmv"].sum()
