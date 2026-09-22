@@ -60,19 +60,25 @@ tzdata==2026.4
 | 检查项 | 结果 |
 | --- | --- |
 | `pip install -e ".[dev]"` 干净环境安装 | 通过 |
-| 模拟数据可复现性（同种子重生成） | 通过，sha256 一致 |
-| 完整流水线 `run` | 通过，10 项验证全部 PASSED |
-| 自动化测试 | 通过，111 个测试全绿 |
+| 模拟数据可复现性（同种子重生成） | 通过，三张表 sha256 均一致 |
+| 完整流水线 `run` | 通过，17 项验证全部 PASSED |
+| 自动化测试 | 通过，191 个测试全绿 |
 | 代码风格 `ruff check src tests` | 通过，0 问题 |
-| 四张业务图表渲染（中文无豆腐块） | 通过 |
-| HTML 报告内嵌图表 | 通过，4 张图以 base64 内嵌，单文件可离线打开 |
+| 九张业务图表渲染（中文无豆腐块） | 通过 |
+| HTML 报告内嵌图表 | 通过，9 张图以 base64 内嵌，单文件可离线打开 |
 
-**可复现性证据**：用同一随机种子重新生成数据，与仓库中已提交的文件逐字节一致。
+**可复现性证据**：用同一随机种子重新生成数据，与仓库中已提交的三个文件内容一致。
+
+比对时忽略行尾差异：`.gitattributes` 把 `*.csv` 固定为 `eol=lf`，所以仓库里存的是 LF，而 Windows 上 pandas 写出的工作区文件是 CRLF。下面给出的是**归一化到 LF 之后**的哈希，也就是仓库里实际存储的字节，任何平台克隆下来都能直接核对：
 
 ```text
-data/synthetic_orders.csv        sha256=ea4ecc065cc24af7  bytes=294607
-（重新生成）                      sha256=ea4ecc065cc24af7  bytes=294607
+data/synthetic_orders.csv        sha256=9c213f59a316b52d  bytes=413246
+（重新生成）                      sha256=9c213f59a316b52d  bytes=413246
+data/synthetic_traffic.csv       sha256=6eedff8e8d83213a  bytes=59324
+data/synthetic_products.csv      sha256=6acd002667f10556  bytes=2946
 ```
+
+`tests/test_reproducibility.py` 用同一条规则（`\r\n` → `\n` 后比较）守住这个承诺，所以在三平台 CI 上都能通过。
 
 ## 四、本次修复的两个真实缺陷
 
@@ -115,4 +121,4 @@ python -m pytest
 ruff check src tests
 ```
 
-预期输出：`Pipeline passed`，`artifacts/demo/validation.md` 中 10 项全部 `[PASS]`，测试全绿。
+预期输出：`Pipeline passed`，`artifacts/demo/validation.md` 中 17 项全部 `[PASS]`，测试全绿。
