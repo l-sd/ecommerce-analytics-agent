@@ -14,7 +14,6 @@ from ecommerce_analytics.deliverables import (
 from ecommerce_analytics.demo_data import generate_orders
 from ecommerce_analytics.pipeline import analyze_orders, clean_orders, profile_raw
 
-
 EXPECTED_PROFILE = {
     "rows": 3090,
     "unique_orders": 3000,

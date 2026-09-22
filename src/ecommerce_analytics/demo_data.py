@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 PRODUCTS = [
     ("P001", "iPhone 15 128G", "手机数码", "Apple", 5999),
     ("P002", "iPhone 15 Pro 256G", "手机数码", "Apple", 8999),
