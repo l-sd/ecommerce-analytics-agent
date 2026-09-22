@@ -4,353 +4,1475 @@
     "valid_order": "订单状态不为已退款或已取消，且重算金额非空",
     "gmv": "有效订单的单价×数量之和",
     "aov": "有效GMV / 有效订单数",
-    "rfm": "排除未知用户和缺失日期后，按最近购买、频次、金额三等分"
+    "rfm": "排除未知用户和缺失日期后，按最近购买、频次、金额三等分",
+    "scope": "核心KPI、渠道、月度、商品、RFM 与四个维度的用户/商品指标均基于有效订单；退款与履约指标基于全量订单。"
   },
   "kpi": {
-    "gmv": 9994087.4,
+    "gmv": 8095612.2,
     "orders": 2250,
-    "aov": 4441.82,
+    "aov": 3598.05,
     "quantity": 6623.0,
-    "customers": 200,
+    "customers": 1143,
     "items_per_order": 2.94
   },
   "channel": [
     {
       "渠道": "天猫",
-      "gmv": 3453411.7,
-      "orders": 793,
-      "quantity": 2323.0,
-      "aov": 4354.8697351828505,
-      "gmv_share": 0.3455454772188604
-    },
-    {
-      "渠道": "京东",
-      "gmv": 2201762.9,
-      "orders": 536,
-      "quantity": 1603.0,
-      "aov": 4107.7666044776115,
-      "gmv_share": 0.22030654844983644
+      "gmv": 2641176.4,
+      "orders": 770,
+      "quantity": 2259.0,
+      "aov": 3430.0992207792206,
+      "gmv_share": 0.32624789018426553
     },
     {
       "渠道": "拼多多",
-      "gmv": 1945174.2,
-      "orders": 439,
-      "quantity": 1291.0,
-      "aov": 4430.9207289293845,
-      "gmv_share": 0.1946324984110105
+      "gmv": 1956092.5,
+      "orders": 464,
+      "quantity": 1355.0,
+      "aov": 4215.716594827586,
+      "gmv_share": 0.24162378973637105
+    },
+    {
+      "渠道": "京东",
+      "gmv": 1896277.2,
+      "orders": 540,
+      "quantity": 1608.0,
+      "aov": 3511.624444444444,
+      "gmv_share": 0.2342351823621196
     },
     {
       "渠道": "抖音",
-      "gmv": 1476029.7,
-      "orders": 269,
-      "quantity": 808.0,
-      "aov": 5487.099256505576,
-      "gmv_share": 0.14769029336285372
+      "gmv": 965118.1,
+      "orders": 266,
+      "quantity": 772.0,
+      "aov": 3628.2635338345863,
+      "gmv_share": 0.11921496190244885
     },
     {
       "渠道": "微信小程序",
-      "gmv": 831156.2,
-      "orders": 192,
-      "quantity": 535.0,
-      "aov": 4328.938541666666,
-      "gmv_share": 0.08316479201492674
+      "gmv": 571951.4,
+      "orders": 189,
+      "quantity": 566.0,
+      "aov": 3026.197883597884,
+      "gmv_share": 0.07064955507626712
     },
     {
       "渠道": "未知",
-      "gmv": 86552.7,
+      "gmv": 64996.6,
       "orders": 21,
       "quantity": 63.0,
-      "aov": 4121.557142857143,
-      "gmv_share": 0.008660390542512166
+      "aov": 3095.0761904761903,
+      "gmv_share": 0.008028620738527965
     }
   ],
   "monthly": [
     {
       "month": "2024-01",
-      "gmv": 903927.1,
-      "orders": 197,
-      "quantity": 569.0,
-      "aov": 4588.462436548223
+      "gmv": 470548.0,
+      "orders": 146,
+      "quantity": 419.0,
+      "aov": 3222.931506849315
     },
     {
       "month": "2024-02",
-      "gmv": 819377.2,
-      "orders": 187,
-      "quantity": 551.0,
-      "aov": 4381.696256684491
+      "gmv": 503209.6,
+      "orders": 149,
+      "quantity": 424.0,
+      "aov": 3377.2456375838924
     },
     {
       "month": "2024-03",
-      "gmv": 961676.4,
-      "orders": 176,
-      "quantity": 545.0,
-      "aov": 5464.070454545455
+      "gmv": 672206.6,
+      "orders": 180,
+      "quantity": 561.0,
+      "aov": 3734.481111111111
     },
     {
       "month": "2024-04",
-      "gmv": 777256.1,
-      "orders": 195,
-      "quantity": 589.0,
-      "aov": 3985.928717948718
+      "gmv": 439658.9,
+      "orders": 137,
+      "quantity": 431.0,
+      "aov": 3209.1890510948906
     },
     {
       "month": "2024-05",
-      "gmv": 712787.3,
-      "orders": 189,
-      "quantity": 529.0,
-      "aov": 3771.361375661376
+      "gmv": 635184.7,
+      "orders": 183,
+      "quantity": 534.0,
+      "aov": 3470.954644808743
     },
     {
       "month": "2024-06",
-      "gmv": 873615.3,
-      "orders": 176,
-      "quantity": 532.0,
-      "aov": 4963.723295454546
+      "gmv": 1052215.9,
+      "orders": 245,
+      "quantity": 701.0,
+      "aov": 4294.758775510204
     },
     {
       "month": "2024-07",
-      "gmv": 946693.4,
-      "orders": 203,
-      "quantity": 589.0,
-      "aov": 4663.5142857142855
+      "gmv": 572931.3,
+      "orders": 177,
+      "quantity": 531.0,
+      "aov": 3236.9
     },
     {
       "month": "2024-08",
-      "gmv": 947108.8,
-      "orders": 176,
-      "quantity": 535.0,
-      "aov": 5381.3
+      "gmv": 723063.6,
+      "orders": 164,
+      "quantity": 481.0,
+      "aov": 4408.924390243902
     },
     {
       "month": "2024-09",
-      "gmv": 618237.1,
-      "orders": 172,
-      "quantity": 498.0,
-      "aov": 3594.4017441860465
+      "gmv": 327475.3,
+      "orders": 93,
+      "quantity": 287.0,
+      "aov": 3521.2397849462363
     },
     {
       "month": "2024-10",
-      "gmv": 920740.7,
-      "orders": 178,
-      "quantity": 527.0,
-      "aov": 5172.700561797753
+      "gmv": 487461.2,
+      "orders": 152,
+      "quantity": 448.0,
+      "aov": 3206.9815789473687
     },
     {
       "month": "2024-11",
-      "gmv": 626393.3,
-      "orders": 185,
-      "quantity": 533.0,
-      "aov": 3385.90972972973
+      "gmv": 1161717.2,
+      "orders": 327,
+      "quantity": 938.0,
+      "aov": 3552.651987767584
     },
     {
       "month": "2024-12",
-      "gmv": 721796.4,
-      "orders": 182,
-      "quantity": 525.0,
-      "aov": 3965.914285714286
+      "gmv": 966269.2,
+      "orders": 263,
+      "quantity": 767.0,
+      "aov": 3674.0273764258554
     }
   ],
   "products_top15": [
     {
       "product_normalized": "iphone15pro256g",
-      "gmv": 1421842.0,
-      "orders": 51,
-      "quantity": 158.0,
-      "gmv_share": 0.14226831756544375,
-      "cumulative_share": 0.14226831756544375
-    },
-    {
-      "product_normalized": "华为mate60pro",
-      "gmv": 1133838.0,
-      "orders": 55,
-      "quantity": 162.0,
-      "gmv_share": 0.11345087896669785,
-      "cumulative_share": 0.2557191965321416
-    },
-    {
-      "product_normalized": "iphone15128g",
-      "gmv": 905849.0,
-      "orders": 50,
-      "quantity": 151.0,
-      "gmv_share": 0.09063849091413789,
-      "cumulative_share": 0.3463576874462795
-    },
-    {
-      "product_normalized": "联想小新pro16笔记本",
-      "gmv": 608895.0,
-      "orders": 38,
-      "quantity": 105.0,
-      "gmv_share": 0.06092552282462529,
-      "cumulative_share": 0.40728321027090475
-    },
-    {
-      "product_normalized": "荣耀magic6",
-      "gmv": 591852.0,
-      "orders": 42,
-      "quantity": 148.0,
-      "gmv_share": 0.05922021454405131,
-      "cumulative_share": 0.46650342481495605
-    },
-    {
-      "product_normalized": "戴尔u2723qe显示器",
-      "gmv": 479363.0,
-      "orders": 50,
-      "quantity": 137.0,
-      "gmv_share": 0.04796465958462601,
-      "cumulative_share": 0.514468084399582
-    },
-    {
-      "product_normalized": "戴森v12吸尘器",
-      "gmv": 470470.0,
-      "orders": 54,
-      "quantity": 143.0,
-      "gmv_share": 0.047074833466035124,
-      "cumulative_share": 0.5615429178656172
-    },
-    {
-      "product_normalized": "小米电视65寸",
-      "gmv": 464845.0,
-      "orders": 51,
-      "quantity": 155.0,
-      "gmv_share": 0.04651200068552532,
-      "cumulative_share": 0.6080549185511426
-    },
-    {
-      "product_normalized": "小米1412+256g",
-      "gmv": 459993.0,
-      "orders": 33,
-      "quantity": 107.0,
-      "gmv_share": 0.04602651363645269,
-      "cumulative_share": 0.6540814321875952
-    },
-    {
-      "product_normalized": "海尔冰箱501l",
-      "gmv": 459885.0,
-      "orders": 35,
-      "quantity": 115.0,
-      "gmv_share": 0.0460157072470669,
-      "cumulative_share": 0.7000971394346621
-    },
-    {
-      "product_normalized": "redmik70",
-      "gmv": 374850.0,
-      "orders": 52,
-      "quantity": 150.0,
-      "gmv_share": 0.03750717649317335,
-      "cumulative_share": 0.7376043159278355
-    },
-    {
-      "product_normalized": "华为平板matepad11",
-      "gmv": 336447.0,
-      "orders": 52,
-      "quantity": 153.0,
-      "gmv_share": 0.03366460453407682,
-      "cumulative_share": 0.7712689204619123
+      "gmv": 1583824.0,
+      "orders": 63,
+      "quantity": 176.0,
+      "gmv_share": 0.1956398059679786,
+      "cumulative_share": 0.1956398059679786
     },
     {
       "product_normalized": "美的1.5匹空调",
-      "gmv": 319086.0,
-      "orders": 42,
-      "quantity": 114.0,
-      "gmv_share": 0.03192747744031136,
-      "cumulative_share": 0.8031963979022236
+      "gmv": 803313.0,
+      "orders": 91,
+      "quantity": 287.0,
+      "gmv_share": 0.09922819672612283,
+      "cumulative_share": 0.2948680026941014
+    },
+    {
+      "product_normalized": "荣耀magic6",
+      "gmv": 631842.0,
+      "orders": 52,
+      "quantity": 158.0,
+      "gmv_share": 0.07804746378538241,
+      "cumulative_share": 0.3729154664794838
+    },
+    {
+      "product_normalized": "索尼wh-1000xm5耳机",
+      "gmv": 575760.0,
+      "orders": 86,
+      "quantity": 240.0,
+      "gmv_share": 0.07112000745292617,
+      "cumulative_share": 0.44403547393241
+    },
+    {
+      "product_normalized": "华为mate60pro",
+      "gmv": 559920.0,
+      "orders": 28,
+      "quantity": 80.0,
+      "gmv_share": 0.06916339199152846,
+      "cumulative_share": 0.5131988659239385
+    },
+    {
+      "product_normalized": "iphone15128g",
+      "gmv": 479920.0,
+      "orders": 25,
+      "quantity": 80.0,
+      "gmv_share": 0.059281495721843006,
+      "cumulative_share": 0.5724803616457814
+    },
+    {
+      "product_normalized": "小米1412+256g",
+      "gmv": 477189.0,
+      "orders": 37,
+      "quantity": 111.0,
+      "gmv_share": 0.05894415248793662,
+      "cumulative_share": 0.631424514133718
     },
     {
       "product_normalized": "海尔10kg滚筒洗衣机",
-      "gmv": 263961.0,
-      "orders": 45,
-      "quantity": 139.0,
-      "gmv_share": 0.026411716191315274,
-      "cumulative_share": 0.829608114093539
+      "gmv": 438669.0,
+      "orders": 75,
+      "quantity": 231.0,
+      "gmv_share": 0.05418601943408308,
+      "cumulative_share": 0.6856105335678011
     },
     {
       "product_normalized": "airpodspro2",
-      "gmv": 241173.0,
-      "orders": 47,
-      "quantity": 127.0,
-      "gmv_share": 0.024131568030913958,
-      "cumulative_share": 0.8537396821244528
+      "gmv": 408285.0,
+      "orders": 69,
+      "quantity": 215.0,
+      "gmv_share": 0.050432875230856544,
+      "cumulative_share": 0.7360434087986577
+    },
+    {
+      "product_normalized": "华为平板matepad11",
+      "gmv": 395820.0,
+      "orders": 62,
+      "quantity": 180.0,
+      "gmv_share": 0.048893152268336175,
+      "cumulative_share": 0.7849365610669938
+    },
+    {
+      "product_normalized": "小米电视65寸",
+      "gmv": 353882.0,
+      "orders": 36,
+      "quantity": 118.0,
+      "gmv_share": 0.043712815196360326,
+      "cumulative_share": 0.8286493762633542
+    },
+    {
+      "product_normalized": "米家扫地机器人",
+      "gmv": 249444.0,
+      "orders": 58,
+      "quantity": 156.0,
+      "gmv_share": 0.030812246663692713,
+      "cumulative_share": 0.8594616229270469
+    },
+    {
+      "product_normalized": "redmik70",
+      "gmv": 229908.0,
+      "orders": 32,
+      "quantity": 92.0,
+      "gmv_share": 0.028399087594635525,
+      "cumulative_share": 0.8878607105216825
+    },
+    {
+      "product_normalized": "罗技mxmaster3s鼠标",
+      "gmv": 150285.0,
+      "orders": 68,
+      "quantity": 215.0,
+      "gmv_share": 0.01856375976112097,
+      "cumulative_share": 0.9064244702828034
+    },
+    {
+      "product_normalized": "雅诗兰黛小棕瓶",
+      "gmv": 145350.0,
+      "orders": 54,
+      "quantity": 153.0,
+      "gmv_share": 0.01795417028498475,
+      "cumulative_share": 0.9243786405677882
     }
   ],
   "rfm": [
     {
+      "segment": "重要价值客户",
+      "customers": 251,
+      "gmv": 2997902.1,
+      "customer_share": 0.22095070422535212,
+      "gmv_share": 0.38271649730100105
+    },
+    {
       "segment": "一般客户",
-      "customers": 83,
-      "gmv": 3569091.3,
-      "customer_share": 0.415,
-      "gmv_share": 0.3716807565372953
+      "customers": 407,
+      "gmv": 2108121.7,
+      "customer_share": 0.35827464788732394,
+      "gmv_share": 0.26912585067678885
     },
     {
       "segment": "重要挽留客户",
-      "customers": 48,
-      "gmv": 2636151.7,
-      "customer_share": 0.24,
-      "gmv_share": 0.2745255797191507
-    },
-    {
-      "segment": "重要价值客户",
-      "customers": 37,
-      "gmv": 2435291.9,
-      "customer_share": 0.185,
-      "gmv_share": 0.2536082884125568
+      "customers": 281,
+      "gmv": 2034374.3,
+      "customer_share": 0.24735915492957747,
+      "gmv_share": 0.25971115143992723
     },
     {
       "segment": "潜力客户",
-      "customers": 32,
-      "gmv": 962037.3,
-      "customer_share": 0.16,
-      "gmv_share": 0.10018537533099726
+      "customers": 197,
+      "gmv": 692820.8,
+      "customer_share": 0.17341549295774647,
+      "gmv_share": 0.08844650058228298
     }
   ],
+  "sources": {
+    "orders": {
+      "available": true
+    },
+    "traffic": {
+      "available": true,
+      "rows": 1830
+    },
+    "catalog": {
+      "available": true,
+      "rows": 50
+    }
+  },
+  "traffic": {
+    "available": true,
+    "reason": null,
+    "funnel": [
+      {
+        "stage": "曝光",
+        "count": 736792
+      },
+      {
+        "stage": "访客",
+        "count": 133937
+      },
+      {
+        "stage": "加购",
+        "count": 36947
+      },
+      {
+        "stage": "下单",
+        "count": 2924
+      }
+    ],
+    "rates": {
+      "访客率": 0.1818,
+      "加购率": 0.2759,
+      "下单转化率": 0.0218,
+      "全链路转化率": 0.004
+    },
+    "channel": [
+      {
+        "渠道": "天猫",
+        "曝光数": 175710,
+        "访客数": 31935,
+        "加购数": 8722,
+        "下单数": 963,
+        "gmv": 2641176.4,
+        "gmv_share": 0.3262,
+        "曝光份额": 0.2385,
+        "份额差": 0.0877,
+        "下单转化率": 0.0302,
+        "加购率": 0.2731,
+        "访客率": 0.1817
+      },
+      {
+        "渠道": "抖音",
+        "曝光数": 174619,
+        "访客数": 31951,
+        "加购数": 8878,
+        "下单数": 393,
+        "gmv": 965118.1,
+        "gmv_share": 0.1192,
+        "曝光份额": 0.237,
+        "份额差": -0.1178,
+        "下单转化率": 0.0123,
+        "加购率": 0.2779,
+        "访客率": 0.183
+      },
+      {
+        "渠道": "拼多多",
+        "曝光数": 146366,
+        "访客数": 26431,
+        "加购数": 7337,
+        "下单数": 599,
+        "gmv": 1956092.5,
+        "gmv_share": 0.2416,
+        "曝光份额": 0.1987,
+        "份额差": 0.0429,
+        "下单转化率": 0.0227,
+        "加购率": 0.2776,
+        "访客率": 0.1806
+      },
+      {
+        "渠道": "京东",
+        "曝光数": 135703,
+        "访客数": 24655,
+        "加购数": 6789,
+        "下单数": 700,
+        "gmv": 1896277.2,
+        "gmv_share": 0.2342,
+        "曝光份额": 0.1842,
+        "份额差": 0.05,
+        "下单转化率": 0.0284,
+        "加购率": 0.2754,
+        "访客率": 0.1817
+      },
+      {
+        "渠道": "微信小程序",
+        "曝光数": 104394,
+        "访客数": 18965,
+        "加购数": 5221,
+        "下单数": 269,
+        "gmv": 571951.4,
+        "gmv_share": 0.0706,
+        "曝光份额": 0.1417,
+        "份额差": -0.0711,
+        "下单转化率": 0.0142,
+        "加购率": 0.2753,
+        "访客率": 0.1817
+      }
+    ],
+    "monthly": [
+      {
+        "month": "2024-01",
+        "曝光数": 54249,
+        "访客数": 9874,
+        "加购数": 2683,
+        "下单数": 189,
+        "下单转化率": 0.0191
+      },
+      {
+        "month": "2024-02",
+        "曝光数": 53613,
+        "访客数": 9859,
+        "加购数": 2712,
+        "下单数": 197,
+        "下单转化率": 0.02
+      },
+      {
+        "month": "2024-03",
+        "曝光数": 60715,
+        "访客数": 11209,
+        "加购数": 3077,
+        "下单数": 248,
+        "下单转化率": 0.0221
+      },
+      {
+        "month": "2024-04",
+        "曝光数": 51073,
+        "访客数": 9484,
+        "加购数": 2691,
+        "下单数": 182,
+        "下单转化率": 0.0192
+      },
+      {
+        "month": "2024-05",
+        "曝光数": 58432,
+        "访客数": 10645,
+        "加购数": 2941,
+        "下单数": 227,
+        "下单转化率": 0.0213
+      },
+      {
+        "month": "2024-06",
+        "曝光数": 73041,
+        "访客数": 13046,
+        "加购数": 3601,
+        "下单数": 328,
+        "下单转化率": 0.0251
+      },
+      {
+        "month": "2024-07",
+        "曝光数": 60831,
+        "访客数": 10917,
+        "加购数": 2936,
+        "下单数": 231,
+        "下单转化率": 0.0212
+      },
+      {
+        "month": "2024-08",
+        "曝光数": 54048,
+        "访客数": 10209,
+        "加购数": 2838,
+        "下单数": 212,
+        "下单转化率": 0.0208
+      },
+      {
+        "month": "2024-09",
+        "曝光数": 46039,
+        "访客数": 8217,
+        "加购数": 2286,
+        "下单数": 130,
+        "下单转化率": 0.0158
+      },
+      {
+        "month": "2024-10",
+        "曝光数": 56427,
+        "访客数": 10012,
+        "加购数": 2750,
+        "下单数": 195,
+        "下单转化率": 0.0195
+      },
+      {
+        "month": "2024-11",
+        "曝光数": 90379,
+        "访客数": 16138,
+        "加购数": 4522,
+        "下单数": 428,
+        "下单转化率": 0.0265
+      },
+      {
+        "month": "2024-12",
+        "曝光数": 77945,
+        "访客数": 14327,
+        "加购数": 3910,
+        "下单数": 357,
+        "下单转化率": 0.0249
+      }
+    ],
+    "conservation": {
+      "traffic_orders": 2924,
+      "attributable_orders": 2924,
+      "difference": 0,
+      "passed": true
+    },
+    "definitions": {
+      "曝光数": "流量表中该渠道当日的商品曝光次数之和（PV）。",
+      "访客数": "流量表中该渠道当日的去重访客数之和（UV）。",
+      "加购数": "流量表中该渠道当日加入购物车的次数之和。",
+      "下单数": "由订单明细按渠道×日期分组统计得到，因此与订单表天然守恒。",
+      "访客率": "访客数 / 曝光数。",
+      "加购率": "加购数 / 访客数。",
+      "下单转化率": "下单数 / 访客数；这是行业口径的转化率。",
+      "全链路转化率": "下单数 / 曝光数。"
+    },
+    "limitations": [
+      "曝光、访客与加购来自合成的流量表，不是真实埋点数据；漏斗形状用于演示口径，不代表真实转化水平。",
+      "下单数由订单明细回填，因此漏斗末端与订单表严格守恒，但这意味着它不含未成交的浏览行为。"
+    ]
+  },
+  "sales": {
+    "available": true,
+    "reason": null,
+    "category": [
+      {
+        "商品品类": "手机数码",
+        "gmv": 4989272.0,
+        "orders": 481,
+        "quantity": 1408.0,
+        "aov": 10372.71,
+        "gmv_share": 0.6163
+      },
+      {
+        "商品品类": "家电",
+        "gmv": 1953841.0,
+        "orders": 386,
+        "quantity": 1159.0,
+        "aov": 5061.76,
+        "gmv_share": 0.2413
+      },
+      {
+        "商品品类": "电脑办公",
+        "gmv": 586686.7,
+        "orders": 298,
+        "quantity": 890.0,
+        "aov": 1968.75,
+        "gmv_share": 0.0725
+      },
+      {
+        "商品品类": "美妆个护",
+        "gmv": 271949.6,
+        "orders": 364,
+        "quantity": 1076.0,
+        "aov": 747.11,
+        "gmv_share": 0.0336
+      },
+      {
+        "商品品类": "服饰",
+        "gmv": 178556.5,
+        "orders": 261,
+        "quantity": 797.0,
+        "aov": 684.12,
+        "gmv_share": 0.0221
+      },
+      {
+        "商品品类": "家居日用",
+        "gmv": 63318.2,
+        "orders": 244,
+        "quantity": 701.0,
+        "aov": 259.5,
+        "gmv_share": 0.0078
+      },
+      {
+        "商品品类": "食品",
+        "gmv": 51988.2,
+        "orders": 216,
+        "quantity": 592.0,
+        "aov": 240.69,
+        "gmv_share": 0.0064
+      }
+    ],
+    "brand": [
+      {
+        "品牌": "Apple",
+        "gmv": 2357245.0,
+        "orders": 152,
+        "gmv_share": 0.2912
+      },
+      {
+        "品牌": "小米",
+        "gmv": 1335554.0,
+        "orders": 249,
+        "gmv_share": 0.165
+      },
+      {
+        "品牌": "华为",
+        "gmv": 934743.0,
+        "orders": 89,
+        "gmv_share": 0.1155
+      },
+      {
+        "品牌": "美的",
+        "gmv": 803313.0,
+        "orders": 91,
+        "gmv_share": 0.0992
+      },
+      {
+        "品牌": "荣耀",
+        "gmv": 631842.0,
+        "orders": 52,
+        "gmv_share": 0.078
+      },
+      {
+        "品牌": "索尼",
+        "gmv": 566164.0,
+        "orders": 85,
+        "gmv_share": 0.0699
+      },
+      {
+        "品牌": "海尔",
+        "gmv": 429174.0,
+        "orders": 74,
+        "gmv_share": 0.053
+      },
+      {
+        "品牌": "罗技",
+        "gmv": 144693.0,
+        "orders": 66,
+        "gmv_share": 0.0179
+      },
+      {
+        "品牌": "雅诗兰黛",
+        "gmv": 143450.0,
+        "orders": 53,
+        "gmv_share": 0.0177
+      },
+      {
+        "品牌": "太平鸟",
+        "gmv": 71484.0,
+        "orders": 88,
+        "gmv_share": 0.0088
+      }
+    ],
+    "sell_through": {
+      "available": true,
+      "reason": null,
+      "on_sale_skus": 50,
+      "sold_skus": 45,
+      "sell_through_rate": 0.9,
+      "unsold_skus": [
+        "P013",
+        "P014",
+        "P024",
+        "P025",
+        "P031"
+      ],
+      "unregistered_skus": [],
+      "skus_in_orders": 45
+    },
+    "refund": {
+      "orders": 3000,
+      "refund_orders": 284,
+      "refund_rate": 0.0947,
+      "refund_amount": 595106.6,
+      "by_channel": [
+        {
+          "渠道": "抖音",
+          "orders": 397,
+          "refunds": 83,
+          "refund_rate": 0.2091,
+          "refund_amount": 160236.7
+        },
+        {
+          "渠道": "微信小程序",
+          "orders": 274,
+          "refunds": 42,
+          "refund_rate": 0.1533,
+          "refund_amount": 69284.7
+        },
+        {
+          "渠道": "拼多多",
+          "orders": 614,
+          "refunds": 66,
+          "refund_rate": 0.1075,
+          "refund_amount": 173903.3
+        },
+        {
+          "渠道": "京东",
+          "orders": 710,
+          "refunds": 55,
+          "refund_rate": 0.0775,
+          "refund_amount": 101802.9
+        },
+        {
+          "渠道": "未知",
+          "orders": 31,
+          "refunds": 2,
+          "refund_rate": 0.0645,
+          "refund_amount": 436.9
+        },
+        {
+          "渠道": "天猫",
+          "orders": 974,
+          "refunds": 36,
+          "refund_rate": 0.037,
+          "refund_amount": 89442.1
+        }
+      ],
+      "reasons": [
+        {
+          "退款原因": "七天无理由",
+          "orders": 104,
+          "share": 0.3662
+        },
+        {
+          "退款原因": "质量问题",
+          "orders": 48,
+          "share": 0.169
+        },
+        {
+          "退款原因": "不想要了",
+          "orders": 45,
+          "share": 0.1585
+        },
+        {
+          "退款原因": "物流太慢",
+          "orders": 44,
+          "share": 0.1549
+        },
+        {
+          "退款原因": "价格保护",
+          "orders": 24,
+          "share": 0.0845
+        },
+        {
+          "退款原因": "发错货",
+          "orders": 19,
+          "share": 0.0669
+        }
+      ]
+    },
+    "definitions": {
+      "品类GMV": "有效订单按商品品类汇总的金额之和。",
+      "品类占比": "品类 GMV / 有效 GMV；各品类合计应等于 100%。",
+      "品牌GMV": "有效订单按品牌汇总的金额之和（品牌来自商品主数据）。",
+      "在售SKU数": "商品主数据中在售状态的 SKU 数量。",
+      "有销量SKU数": "有效订单中出现过、且存在于主数据在售清单中的 SKU 数量。",
+      "动销率": "有销量SKU数 / 在售SKU数。分母必须来自商品主数据，不能用明细反推。",
+      "退款率": "已退款订单数 / 该渠道全量订单数（分母是全量，不是有效订单）。",
+      "退款金额": "已退款订单金额的绝对值之和，用于衡量退款对 GMV 的侵蚀。"
+    },
+    "limitations": [
+      "退款率的分母是全量订单，核心 KPI 的分母是有效订单；两者不可直接相加或对比。",
+      "退款原因来自合成字段，仅用于演示归因表格的组织方式。"
+    ]
+  },
+  "users": {
+    "available": true,
+    "reason": null,
+    "repurchase": {
+      "available": true,
+      "reason": null,
+      "customers": 1143,
+      "repeat_customers": 652,
+      "repeat_rate": 0.5704,
+      "orders_per_customer": 1.9309,
+      "frequency_buckets": [
+        {
+          "bucket": "1 单",
+          "customers": 491,
+          "share": 0.4296
+        },
+        {
+          "bucket": "2 单",
+          "customers": 369,
+          "share": 0.3228
+        },
+        {
+          "bucket": "3-4 单",
+          "customers": 255,
+          "share": 0.2231
+        },
+        {
+          "bucket": "5 单及以上",
+          "customers": 28,
+          "share": 0.0245
+        }
+      ]
+    },
+    "acquisition": [
+      {
+        "month": "2024-01",
+        "new_customers": 137
+      },
+      {
+        "month": "2024-02",
+        "new_customers": 128
+      },
+      {
+        "month": "2024-03",
+        "new_customers": 141
+      },
+      {
+        "month": "2024-04",
+        "new_customers": 101
+      },
+      {
+        "month": "2024-05",
+        "new_customers": 105
+      },
+      {
+        "month": "2024-06",
+        "new_customers": 123
+      },
+      {
+        "month": "2024-07",
+        "new_customers": 77
+      },
+      {
+        "month": "2024-08",
+        "new_customers": 65
+      },
+      {
+        "month": "2024-09",
+        "new_customers": 39
+      },
+      {
+        "month": "2024-10",
+        "new_customers": 58
+      },
+      {
+        "month": "2024-11",
+        "new_customers": 97
+      },
+      {
+        "month": "2024-12",
+        "new_customers": 65
+      }
+    ],
+    "concentration": {
+      "available": true,
+      "reason": null,
+      "customer_count": 1143,
+      "top_customers": 114,
+      "top_gmv": 3401020.0,
+      "top_gmv_share": 0.4201,
+      "small_sample": false
+    },
+    "region": [
+      {
+        "收货省份": "广东",
+        "gmv": 1271635.1,
+        "orders": 349,
+        "customers": 310,
+        "gmv_share": 0.1571,
+        "aov": 3643.65
+      },
+      {
+        "收货省份": "浙江",
+        "gmv": 751877.7,
+        "orders": 220,
+        "customers": 197,
+        "gmv_share": 0.0929,
+        "aov": 3417.63
+      },
+      {
+        "收货省份": "江苏",
+        "gmv": 707440.0,
+        "orders": 196,
+        "customers": 185,
+        "gmv_share": 0.0874,
+        "aov": 3609.39
+      },
+      {
+        "收货省份": "山东",
+        "gmv": 579706.5,
+        "orders": 145,
+        "customers": 135,
+        "gmv_share": 0.0716,
+        "aov": 3997.98
+      },
+      {
+        "收货省份": "河南",
+        "gmv": 406416.6,
+        "orders": 136,
+        "customers": 129,
+        "gmv_share": 0.0502,
+        "aov": 2988.36
+      },
+      {
+        "收货省份": "湖南",
+        "gmv": 387508.3,
+        "orders": 103,
+        "customers": 96,
+        "gmv_share": 0.0479,
+        "aov": 3762.22
+      },
+      {
+        "收货省份": "湖北",
+        "gmv": 379913.0,
+        "orders": 98,
+        "customers": 94,
+        "gmv_share": 0.0469,
+        "aov": 3876.66
+      },
+      {
+        "收货省份": "福建",
+        "gmv": 372357.9,
+        "orders": 103,
+        "customers": 102,
+        "gmv_share": 0.046,
+        "aov": 3615.13
+      },
+      {
+        "收货省份": "四川",
+        "gmv": 324146.2,
+        "orders": 108,
+        "customers": 104,
+        "gmv_share": 0.04,
+        "aov": 3001.35
+      },
+      {
+        "收货省份": "河北",
+        "gmv": 310716.6,
+        "orders": 75,
+        "customers": 72,
+        "gmv_share": 0.0384,
+        "aov": 4142.89
+      },
+      {
+        "收货省份": "北京",
+        "gmv": 295862.6,
+        "orders": 67,
+        "customers": 67,
+        "gmv_share": 0.0365,
+        "aov": 4415.86
+      },
+      {
+        "收货省份": "江西",
+        "gmv": 268031.4,
+        "orders": 40,
+        "customers": 40,
+        "gmv_share": 0.0331,
+        "aov": 6700.79
+      },
+      {
+        "收货省份": "辽宁",
+        "gmv": 240303.2,
+        "orders": 54,
+        "customers": 54,
+        "gmv_share": 0.0297,
+        "aov": 4450.06
+      },
+      {
+        "收货省份": "上海",
+        "gmv": 219539.5,
+        "orders": 67,
+        "customers": 67,
+        "gmv_share": 0.0271,
+        "aov": 3276.71
+      },
+      {
+        "收货省份": "安徽",
+        "gmv": 195957.5,
+        "orders": 79,
+        "customers": 78,
+        "gmv_share": 0.0242,
+        "aov": 2480.47
+      },
+      {
+        "收货省份": "贵州",
+        "gmv": 168625.4,
+        "orders": 33,
+        "customers": 33,
+        "gmv_share": 0.0208,
+        "aov": 5109.86
+      },
+      {
+        "收货省份": "未知",
+        "gmv": 160854.6,
+        "orders": 27,
+        "customers": 27,
+        "gmv_share": 0.0199,
+        "aov": 5957.58
+      },
+      {
+        "收货省份": "陕西",
+        "gmv": 145483.3,
+        "orders": 58,
+        "customers": 56,
+        "gmv_share": 0.018,
+        "aov": 2508.33
+      },
+      {
+        "收货省份": "重庆",
+        "gmv": 141312.3,
+        "orders": 66,
+        "customers": 64,
+        "gmv_share": 0.0175,
+        "aov": 2141.1
+      },
+      {
+        "收货省份": "广西",
+        "gmv": 133879.8,
+        "orders": 28,
+        "customers": 28,
+        "gmv_share": 0.0165,
+        "aov": 4781.42
+      },
+      {
+        "收货省份": "天津",
+        "gmv": 128277.2,
+        "orders": 41,
+        "customers": 41,
+        "gmv_share": 0.0158,
+        "aov": 3128.71
+      },
+      {
+        "收货省份": "云南",
+        "gmv": 101948.3,
+        "orders": 26,
+        "customers": 26,
+        "gmv_share": 0.0126,
+        "aov": 3921.09
+      },
+      {
+        "收货省份": "山西",
+        "gmv": 81856.3,
+        "orders": 22,
+        "customers": 22,
+        "gmv_share": 0.0101,
+        "aov": 3720.74
+      },
+      {
+        "收货省份": "甘肃",
+        "gmv": 61693.2,
+        "orders": 14,
+        "customers": 14,
+        "gmv_share": 0.0076,
+        "aov": 4406.66
+      },
+      {
+        "收货省份": "黑龙江",
+        "gmv": 59272.0,
+        "orders": 29,
+        "customers": 28,
+        "gmv_share": 0.0073,
+        "aov": 2043.86
+      },
+      {
+        "收货省份": "海南",
+        "gmv": 58297.5,
+        "orders": 13,
+        "customers": 13,
+        "gmv_share": 0.0072,
+        "aov": 4484.42
+      },
+      {
+        "收货省份": "内蒙古",
+        "gmv": 42458.2,
+        "orders": 18,
+        "customers": 18,
+        "gmv_share": 0.0052,
+        "aov": 2358.79
+      },
+      {
+        "收货省份": "新疆",
+        "gmv": 37528.4,
+        "orders": 18,
+        "customers": 18,
+        "gmv_share": 0.0046,
+        "aov": 2084.91
+      },
+      {
+        "收货省份": "宁夏",
+        "gmv": 35685.9,
+        "orders": 6,
+        "customers": 6,
+        "gmv_share": 0.0044,
+        "aov": 5947.65
+      },
+      {
+        "收货省份": "吉林",
+        "gmv": 24248.9,
+        "orders": 7,
+        "customers": 7,
+        "gmv_share": 0.003,
+        "aov": 3464.13
+      },
+      {
+        "收货省份": "青海",
+        "gmv": 2778.8,
+        "orders": 4,
+        "customers": 4,
+        "gmv_share": 0.0003,
+        "aov": 694.7
+      }
+    ],
+    "definitions": {
+      "有效客户数": "有效订单中出现过、且用户ID已知的去重客户数。",
+      "复购客户数": "在有效订单中下单次数 ≥ 2 的客户数。",
+      "复购率": "复购客户数 / 有效客户数。",
+      "客均订单数": "有效订单数 / 有效客户数。",
+      "首单月份": "客户在观察窗口内第一次有效下单的月份；窗口之前没有历史，因此不能区分真实新客与老客。",
+      "Top10%客户GMV占比": "按客户累计金额降序，取前 10% 客户的金额之和 / 有效 GMV。"
+    },
+    "limitations": [
+      "数据窗口只有一年且没有更早历史，因此无法区分真实新客与老客；这里只展示首单月份分布。",
+      "复购率基于订单明细推算，未做同一自然人多账号合并，也未排除代购等场景。"
+    ]
+  },
+  "fulfilment": {
+    "available": true,
+    "reason": null,
+    "ship_lag": {
+      "count": 2067,
+      "mean": 1.54,
+      "median": 1.0,
+      "p90": 3.0,
+      "max": 5
+    },
+    "ship_lag_histogram": [
+      {
+        "days": 1,
+        "orders": 1217,
+        "share": 0.5888
+      },
+      {
+        "days": 2,
+        "orders": 637,
+        "share": 0.3082
+      },
+      {
+        "days": 3,
+        "orders": 178,
+        "share": 0.0861
+      },
+      {
+        "days": 4,
+        "orders": 27,
+        "share": 0.0131
+      },
+      {
+        "days": 5,
+        "orders": 8,
+        "share": 0.0039
+      }
+    ],
+    "late": {
+      "shipped_orders": 2067,
+      "late_orders": 166,
+      "late_rate": 0.0803,
+      "industry_threshold": 0.04,
+      "above_industry_line": true
+    },
+    "delivery": {
+      "delivered_orders": 1630,
+      "mean_lag": 2.75,
+      "overdue_orders": 102,
+      "overdue_rate": 0.0626
+    },
+    "carrier": [
+      {
+        "物流商": "顺丰",
+        "orders": 539,
+        "mean_ship_lag": 1.06,
+        "late_orders": 30,
+        "late_rate": 0.0557,
+        "delivered_orders": 418,
+        "mean_delivery_lag": 1.88,
+        "overdue_rate": 0.0287
+      },
+      {
+        "物流商": "中通",
+        "orders": 425,
+        "mean_ship_lag": 1.68,
+        "late_orders": 26,
+        "late_rate": 0.0612,
+        "delivered_orders": 333,
+        "mean_delivery_lag": 3.16,
+        "overdue_rate": 0.0781
+      },
+      {
+        "物流商": "京东物流",
+        "orders": 471,
+        "mean_ship_lag": 1.09,
+        "late_orders": 35,
+        "late_rate": 0.0743,
+        "delivered_orders": 381,
+        "mean_delivery_lag": 1.98,
+        "overdue_rate": 0.0499
+      },
+      {
+        "物流商": "圆通",
+        "orders": 390,
+        "mean_ship_lag": 1.84,
+        "late_orders": 42,
+        "late_rate": 0.1077,
+        "delivered_orders": 294,
+        "mean_delivery_lag": 3.32,
+        "overdue_rate": 0.1259
+      },
+      {
+        "物流商": "邮政",
+        "orders": 242,
+        "mean_ship_lag": 2.72,
+        "late_orders": 33,
+        "late_rate": 0.1364,
+        "delivered_orders": 204,
+        "mean_delivery_lag": 4.49,
+        "overdue_rate": 0.0392
+      }
+    ],
+    "monthly": [
+      {
+        "month": "2024-01",
+        "shipped_orders": 137,
+        "late_rate": 0.0584,
+        "delivered_orders": 112,
+        "overdue_rate": 0.0804,
+        "small_sample": false
+      },
+      {
+        "month": "2024-02",
+        "shipped_orders": 137,
+        "late_rate": 0.073,
+        "delivered_orders": 105,
+        "overdue_rate": 0.0571,
+        "small_sample": false
+      },
+      {
+        "month": "2024-03",
+        "shipped_orders": 171,
+        "late_rate": 0.1111,
+        "delivered_orders": 133,
+        "overdue_rate": 0.0526,
+        "small_sample": false
+      },
+      {
+        "month": "2024-04",
+        "shipped_orders": 130,
+        "late_rate": 0.0615,
+        "delivered_orders": 103,
+        "overdue_rate": 0.0583,
+        "small_sample": false
+      },
+      {
+        "month": "2024-05",
+        "shipped_orders": 170,
+        "late_rate": 0.1118,
+        "delivered_orders": 129,
+        "overdue_rate": 0.0698,
+        "small_sample": false
+      },
+      {
+        "month": "2024-06",
+        "shipped_orders": 229,
+        "late_rate": 0.0699,
+        "delivered_orders": 179,
+        "overdue_rate": 0.067,
+        "small_sample": false
+      },
+      {
+        "month": "2024-07",
+        "shipped_orders": 157,
+        "late_rate": 0.0573,
+        "delivered_orders": 128,
+        "overdue_rate": 0.0234,
+        "small_sample": false
+      },
+      {
+        "month": "2024-08",
+        "shipped_orders": 148,
+        "late_rate": 0.1081,
+        "delivered_orders": 112,
+        "overdue_rate": 0.1071,
+        "small_sample": false
+      },
+      {
+        "month": "2024-09",
+        "shipped_orders": 86,
+        "late_rate": 0.0698,
+        "delivered_orders": 68,
+        "overdue_rate": 0.0588,
+        "small_sample": false
+      },
+      {
+        "month": "2024-10",
+        "shipped_orders": 149,
+        "late_rate": 0.0537,
+        "delivered_orders": 114,
+        "overdue_rate": 0.0351,
+        "small_sample": false
+      },
+      {
+        "month": "2024-11",
+        "shipped_orders": 299,
+        "late_rate": 0.0903,
+        "delivered_orders": 251,
+        "overdue_rate": 0.0438,
+        "small_sample": false
+      },
+      {
+        "month": "2024-12",
+        "shipped_orders": 254,
+        "late_rate": 0.0787,
+        "delivered_orders": 196,
+        "overdue_rate": 0.0969,
+        "small_sample": false
+      }
+    ],
+    "funnel": [
+      {
+        "stage": "下单",
+        "count": 3000
+      },
+      {
+        "stage": "发货",
+        "count": 2067
+      },
+      {
+        "stage": "签收",
+        "count": 1630
+      }
+    ],
+    "funnel_monotonic": true,
+    "definitions": {
+      "发货时效": "发货时间 − 下单日期，单位天。",
+      "应发订单数": "产生发货时间的订单数（已发货 + 已完成）。待发货尚未发货，无法判定迟发。",
+      "迟发订单数": "发货时效 > 承诺发货时效的订单数。",
+      "迟发率": "迟发订单数 / 应发订单数。行业常设考核线为 4%。",
+      "签收时效": "签收时间 − 发货时间，单位天。",
+      "已签收订单数": "产生签收时间的订单数（已完成）。",
+      "逾期订单数": "签收时效 > 承诺送达时效的订单数。",
+      "逾期率": "逾期订单数 / 已签收订单数。分母是已签收订单，不是全量订单。"
+    },
+    "limitations": [
+      "发货/签收时间与承诺时效均为合成字段，仅用于演示履约口径的组织方式。",
+      "待发货订单尚未产生发货时间，无法判定是否迟发，因此不进入迟发率分母。",
+      "数据窗口末端的订单可能仍在途，签收率会被低估。"
+    ]
+  },
   "validation_values": {
-    "gmv_from_amount": 9994087.4,
-    "gmv_from_price_times_quantity": 9994087.4,
-    "channel_gmv_sum": 9994087.4,
-    "monthly_gmv_sum": 9829609.1,
-    "valid_gmv_with_missing_date": 164478.3
+    "gmv_from_amount": 8095612.2,
+    "gmv_from_price_times_quantity": 8095612.2,
+    "channel_gmv_sum": 8095612.2,
+    "monthly_gmv_sum": 8011941.5,
+    "valid_gmv_with_missing_date": 83670.7,
+    "traffic_orders": 2924,
+    "attributable_orders": 2924,
+    "category_gmv_sum": 8095612.2,
+    "region_gmv_sum": 8095612.2,
+    "refund_amount": 595106.6,
+    "fulfilment_funnel": [
+      {
+        "stage": "下单",
+        "count": 3000
+      },
+      {
+        "stage": "发货",
+        "count": 2067
+      },
+      {
+        "stage": "签收",
+        "count": 1630
+      }
+    ],
+    "sell_through_denominator": 50,
+    "sell_through_numerator": 45
   },
   "limitations": [
     "数据由固定随机种子生成，不代表任何真实企业、消费者或经营表现。",
-    "数据仅包含订单明细，无法计算UV、转化率、毛利率、ROI或因果效果。",
+    "流量、履约与商品主数据均为合成表；转化率、迟发率、逾期率等指标只用于演示口径的组织方式。",
     "缺失单价或数量的订单无法重算金额，相关GMV口径会排除这些记录。",
-    "RFM结果仅用于演示分析流程，不应直接转化为真实营销策略。"
+    "RFM结果仅用于演示分析流程，不应直接转化为真实营销策略。",
+    "退款与履约指标使用全量订单口径，核心KPI使用有效订单口径，两者不可直接相加。",
+    "数据中不含成本与实验设计，因此无法计算毛利率、ROI或因果效果。"
   ],
   "figure_insights": {
     "monthly_trend": {
-      "peak_month": "2024-03",
-      "peak_gmv": 961676.4,
+      "peak_month": "2024-11",
+      "peak_gmv": 1161717.2,
       "trough_month": "2024-09",
-      "trough_gmv": 618237.1,
-      "swing_ratio": 0.5555,
-      "driver": "客单价",
-      "corr_orders": 0.1283,
-      "corr_aov": 0.9395
+      "trough_gmv": 327475.3,
+      "swing_ratio": 2.5475,
+      "driver": "订单量",
+      "corr_orders": 0.9615,
+      "corr_aov": 0.5521
     },
     "channel_structure": {
       "top_channel": "天猫",
-      "top_channel_share": 0.3455,
-      "best_aov_channel": "抖音",
-      "best_aov": 5487.1,
+      "top_channel_share": 0.3262,
+      "best_aov_channel": "拼多多",
+      "best_aov": 4215.72,
       "channel_count": 6
     },
     "product_pareto": {
       "top_n": 15,
-      "top_n_cumulative_share": 0.8537,
-      "skus_for_80_percent": 13,
-      "top1_share": 0.1423
+      "top_n_cumulative_share": 0.9244,
+      "skus_for_80_percent": 11,
+      "top1_share": 0.1956
     },
     "rfm_profile": {
-      "customer_count": 200,
+      "customer_count": 1136,
       "segment_count": 4,
-      "top_gmv_segment": "一般客户",
-      "top_gmv_share": 0.3717,
-      "top_gmv_customers": 83,
+      "top_gmv_segment": "重要价值客户",
+      "top_gmv_share": 0.3827,
+      "top_gmv_customers": 251,
       "longest_recency_segment": "重要挽留客户",
-      "longest_recency_days": 67.4,
+      "longest_recency_days": 244.9,
       "highest_frequency_segment": "重要价值客户",
-      "highest_frequency": 13.8,
+      "highest_frequency": 2.9,
       "highest_monetary_segment": "重要价值客户",
-      "highest_monetary": 65818.7
+      "highest_monetary": 11943.8
+    },
+    "traffic_funnel": {
+      "exposure": 736792,
+      "visitors": 133937,
+      "carts": 36947,
+      "orders": 2924,
+      "visit_rate": 0.1818,
+      "cart_rate": 0.2759,
+      "order_rate": 0.0218,
+      "full_rate": 0.004
+    },
+    "channel_traffic_quality": {
+      "channel_count": 5,
+      "best_channel": "天猫",
+      "best_conversion": 0.0302,
+      "worst_channel": "抖音",
+      "worst_conversion": 0.0123,
+      "widest_gap_channel": "天猫"
+    },
+    "category_gmv": {
+      "category_count": 7,
+      "top_category": "手机数码",
+      "top_gmv": 4989272.0,
+      "top_share": 0.6163,
+      "top3_share": 0.9301,
+      "lowest_category": "食品",
+      "lowest_share": 0.0064
+    },
+    "fulfilment_delivery_lag": {
+      "mean_lag": 1.54,
+      "median_lag": 1.0,
+      "max_lag": 5,
+      "shipped_orders": 2067,
+      "late_orders": 166,
+      "late_rate": 0.0803,
+      "industry_threshold": 0.04,
+      "above_industry_line": true
+    },
+    "fulfilment_trend": {
+      "months": 12,
+      "mean_late_rate": 0.0786,
+      "mean_overdue_rate": 0.0625,
+      "peak_late_month": "2024-05",
+      "peak_late_rate": 0.1118,
+      "months_above_line": 12
     }
   }
 }

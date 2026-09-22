@@ -5,20 +5,54 @@ import re
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
+
+from .analysis import (
+    native,
+    records,
+    summarize_fulfilment,
+    summarize_kpi,
+    summarize_sales,
+    summarize_sources,
+    summarize_traffic,
+    summarize_users,
+    valid_orders,
+)
+
+# Backwards-compatible private aliases: the helpers moved to ``analysis.common``
+# so every module shares one JSON-serialisation rule, but the old names stay
+# importable from here.
+_records = records
+_native = native
 
 REQUIRED_COLUMNS = [
     "订单号", "日期", "渠道", "商品ID", "商品名称", "单价", "数量", "金额", "用户ID", "收货省份", "订单状态"
 ]
+# Optional columns enrich the analysis but are not demanded of an upload: a file
+# with only the eleven required columns still loads, and the modules that need
+# these degrade to ``available=False`` instead of raising.
+OPTIONAL_COLUMNS = [
+    "商品品类", "承诺发货时效", "物流商", "承诺送达时效", "发货时间", "签收时间", "退款原因",
+]
+OPTIONAL_DATE_COLUMNS = ["发货时间", "签收时间"]
+# 退款原因只对退款单有意义，非退款单保持空值，不做「未知」填充。
+OPTIONAL_DIMENSION_COLUMNS = ["商品品类", "物流商"]
+UNKNOWN = "未知"
 INVALID_STATUSES = {"已退款", "已取消"}
 
 
-def _select_required_columns(frame: pd.DataFrame) -> pd.DataFrame:
+def _select_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    """Keep the required columns plus whichever optional ones the file carries.
+
+    Missing *required* columns are still a hard error; missing optional columns
+    are simply absent from the result, so :func:`clean_orders` can tell "column
+    not supplied" apart from "column supplied but blank".
+    """
     missing = [column for column in REQUIRED_COLUMNS if column not in frame.columns]
     if missing:
         raise ValueError(f"Missing required columns: {', '.join(missing)}")
-    return frame[REQUIRED_COLUMNS].copy()
+    selected = list(REQUIRED_COLUMNS) + [column for column in OPTIONAL_COLUMNS if column in frame.columns]
+    return frame[selected].copy()
 
 
 def read_orders_stream(stream: io.IOBase, suffix: str) -> pd.DataFrame:
@@ -34,7 +68,7 @@ def read_orders_stream(stream: io.IOBase, suffix: str) -> pd.DataFrame:
         frame = pd.read_excel(stream, sheet_name="订单明细", dtype={"订单号": "string"})
     else:
         raise ValueError("Input must be a CSV or Excel file.")
-    return _select_required_columns(frame)
+    return _select_columns(frame)
 
 
 def read_orders(path: Path) -> pd.DataFrame:
@@ -86,6 +120,7 @@ def profile_raw(frame: pd.DataFrame) -> dict[str, int]:
 
 def clean_orders(frame: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
     raw_profile = profile_raw(frame)
+    supplied_optional = [column for column in OPTIONAL_COLUMNS if column in frame.columns]
     cleaned = frame.drop_duplicates(subset=["订单号"], keep="first").reset_index(drop=True).copy()
     cleaned["原始日期"] = cleaned["日期"]
     cleaned["日期"] = cleaned["日期"].map(parse_date)
@@ -95,7 +130,22 @@ def clean_orders(frame: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
     cleaned["金额"] = cleaned["单价"] * cleaned["数量"]
     cleaned["是否有效订单"] = ~cleaned["订单状态"].isin(INVALID_STATUSES)
     for column in ["渠道", "商品ID", "商品名称", "用户ID", "收货省份"]:
-        cleaned[column] = cleaned[column].fillna("未知")
+        cleaned[column] = cleaned[column].fillna(UNKNOWN)
+
+    # Optional columns are normalised into existence so every downstream module
+    # sees one shape. A column the file never carried stays null instead of
+    # turning into 未知, which would read as "supplied but blank" and make the
+    # availability flags lie.
+    for column in OPTIONAL_COLUMNS:
+        if column not in cleaned.columns:
+            cleaned[column] = pd.NA
+    for column in OPTIONAL_DATE_COLUMNS:
+        cleaned[column] = cleaned[column].map(parse_date)
+    for column in ["承诺发货时效", "承诺送达时效"]:
+        cleaned[column] = pd.to_numeric(cleaned[column], errors="coerce")
+    for column in OPTIONAL_DIMENSION_COLUMNS:
+        if column in supplied_optional:
+            cleaned[column] = cleaned[column].fillna(UNKNOWN)
 
     log = {
         "dataset_type": "synthetic",
@@ -107,6 +157,11 @@ def clean_orders(frame: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
         "amounts_unresolvable_after_recalculation": int(cleaned["金额"].isna().sum()),
         "valid_orders": int(cleaned["是否有效订单"].sum()),
         "refund_or_cancel_orders": int((~cleaned["是否有效订单"]).sum()),
+        "optional_columns_supplied": supplied_optional,
+        "optional_columns_absent": [column for column in OPTIONAL_COLUMNS if column not in supplied_optional],
+        "orders_with_shipping_date": int(cleaned["发货时间"].notna().sum()),
+        "orders_with_delivery_date": int(cleaned["签收时间"].notna().sum()),
+        "refund_reasons_recorded": int(cleaned["退款原因"].notna().sum()),
         "rules": [
             "Deduplicate by order ID and keep the first row.",
             "Normalize mixed date formats; preserve unparseable dates as missing.",
@@ -114,6 +169,8 @@ def clean_orders(frame: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
             "Recalculate amount as unit price multiplied by quantity; preserve original amount.",
             "Keep refunded and cancelled rows but exclude them from valid-order KPIs.",
             "Fill missing dimensions with 未知 without inventing values.",
+            "Parse shipping and delivery timestamps with the same mixed-format rules as the order date.",
+            "Treat optional columns that the file does not carry as absent, not as 未知.",
         ],
     }
     return cleaned, log
@@ -180,12 +237,24 @@ def _rfm_segments(valid: pd.DataFrame) -> pd.DataFrame:
     return summary.sort_values("gmv", ascending=False)
 
 
-def analyze_orders(cleaned: pd.DataFrame) -> dict[str, Any]:
-    valid = cleaned[cleaned["是否有效订单"] & cleaned["金额"].notna()].copy()
+def analyze_orders(
+    cleaned: pd.DataFrame,
+    traffic: pd.DataFrame | None = None,
+    catalog: pd.DataFrame | None = None,
+) -> dict[str, Any]:
+    """Analyse cleaned orders, optionally enriched by companion tables.
+
+    ``traffic`` and ``catalog`` are optional on purpose: a reviewer who uploads
+    only an order sheet still gets the original KPI/channel/monthly/product/RFM
+    block, and the dimensions that need a companion table report
+    ``available: False`` instead of raising.
+
+    The nine keys that existed before the four-dimension work are preserved
+    verbatim in name and meaning, so the Excel writer, the HTML report, the
+    dashboard, and the existing tests keep working unchanged.
+    """
+    valid = valid_orders(cleaned)
     valid_gmv = float(valid["金额"].sum())
-    valid_orders = int(valid["订单号"].nunique())
-    quantity = float(valid["数量"].sum())
-    customers = int(valid.loc[valid["用户ID"] != "未知", "用户ID"].nunique())
 
     channel = valid.groupby("渠道", dropna=False).agg(
         gmv=("金额", "sum"), orders=("订单号", "nunique"), quantity=("数量", "sum")
@@ -212,6 +281,13 @@ def analyze_orders(cleaned: pd.DataFrame) -> dict[str, Any]:
     source_formula = (valid["单价"] * valid["数量"]).sum()
     date_missing_gmv = valid.loc[valid["日期"].isna(), "金额"].sum()
 
+    # --- four dimensions plus fulfilment ------------------------------------
+    traffic_summary = summarize_traffic(cleaned, traffic)
+    sales_summary = summarize_sales(cleaned, catalog)
+    users_summary = summarize_users(cleaned)
+    fulfilment_summary = summarize_fulfilment(cleaned)
+    conservation = traffic_summary.get("conservation") or {}
+
     return {
         "notice": "Synthetic practice data; not real company transactions.",
         "definitions": {
@@ -219,44 +295,40 @@ def analyze_orders(cleaned: pd.DataFrame) -> dict[str, Any]:
             "gmv": "有效订单的单价×数量之和",
             "aov": "有效GMV / 有效订单数",
             "rfm": "排除未知用户和缺失日期后，按最近购买、频次、金额三等分",
+            "scope": "核心KPI、渠道、月度、商品、RFM 与四个维度的用户/商品指标均基于有效订单；退款与履约指标基于全量订单。",
         },
-        "kpi": {
-            "gmv": round(valid_gmv, 2),
-            "orders": valid_orders,
-            "aov": round(valid_gmv / valid_orders, 2) if valid_orders else None,
-            "quantity": round(quantity, 2),
-            "customers": customers,
-            "items_per_order": round(quantity / valid_orders, 2) if valid_orders else None,
-        },
+        "kpi": summarize_kpi(valid),
         "channel": _records(channel),
         "monthly": _records(monthly),
         "products_top15": _records(products.head(15)),
         "rfm": _records(rfm),
+        "sources": summarize_sources(traffic, catalog),
+        "traffic": traffic_summary,
+        "sales": sales_summary,
+        "users": users_summary,
+        "fulfilment": fulfilment_summary,
         "validation_values": {
             "gmv_from_amount": round(valid_gmv, 2),
             "gmv_from_price_times_quantity": round(float(source_formula), 2),
             "channel_gmv_sum": round(float(channel["gmv"].sum()), 2),
             "monthly_gmv_sum": round(float(monthly["gmv"].sum()), 2),
             "valid_gmv_with_missing_date": round(float(date_missing_gmv), 2),
+            "traffic_orders": conservation.get("traffic_orders"),
+            "attributable_orders": conservation.get("attributable_orders"),
+            "category_gmv_sum": round(sum(row["gmv"] for row in sales_summary["category"]), 2),
+            "region_gmv_sum": round(sum(row["gmv"] for row in users_summary["region"]), 2),
+            "refund_amount": sales_summary["refund"]["refund_amount"],
+            "fulfilment_funnel": fulfilment_summary.get("funnel") or [],
+            "sell_through_denominator": (sales_summary["sell_through"] or {}).get("on_sale_skus"),
+            "sell_through_numerator": (sales_summary["sell_through"] or {}).get("sold_skus"),
         },
         "limitations": [
             "数据由固定随机种子生成，不代表任何真实企业、消费者或经营表现。",
-            "数据仅包含订单明细，无法计算UV、转化率、毛利率、ROI或因果效果。",
+            "流量、履约与商品主数据均为合成表；转化率、迟发率、逾期率等指标只用于演示口径的组织方式。",
             "缺失单价或数量的订单无法重算金额，相关GMV口径会排除这些记录。",
             "RFM结果仅用于演示分析流程，不应直接转化为真实营销策略。",
+            "退款与履约指标使用全量订单口径，核心KPI使用有效订单口径，两者不可直接相加。",
+            "数据中不含成本与实验设计，因此无法计算毛利率、ROI或因果效果。",
         ],
     }
-
-
-def _records(frame: pd.DataFrame) -> list[dict[str, Any]]:
-    records = frame.replace({np.nan: None}).to_dict(orient="records")
-    return [{key: _native(value) for key, value in row.items()} for row in records]
-
-
-def _native(value: Any) -> Any:
-    if isinstance(value, np.generic):
-        return value.item()
-    if isinstance(value, pd.Timestamp):
-        return value.isoformat()
-    return value
 

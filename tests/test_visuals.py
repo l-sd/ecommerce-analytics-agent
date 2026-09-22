@@ -341,7 +341,7 @@ def test_pareto_returns_none_when_eighty_percent_is_never_reached():
 # --- output ------------------------------------------------------------------
 
 
-def test_build_all_figures_writes_four_pngs(tmp_path):
+def test_build_all_figures_writes_every_png(tmp_path):
     analysis = {
         "monthly": [{"month": "2024-01", "gmv": 100.0, "orders": 20, "aov": 5.0}],
         "channel": _channel_rows(3),

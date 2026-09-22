@@ -15,17 +15,17 @@
     {
       "name": "GMV dual calculation",
       "passed": true,
-      "detail": "9994087.4 vs 9994087.4"
+      "detail": "8095612.2 vs 8095612.2"
     },
     {
       "name": "channel roll-up",
       "passed": true,
-      "detail": "9994087.4"
+      "detail": "8095612.2"
     },
     {
       "name": "monthly roll-up with missing dates",
       "passed": true,
-      "detail": "9829609.1 + 164478.3"
+      "detail": "8011941.5 + 83670.7"
     },
     {
       "name": "Excel formula audit",
@@ -40,17 +40,52 @@
     {
       "name": "chart files written",
       "passed": true,
-      "detail": "4 charts; missing: []"
+      "detail": "9 charts; missing: []"
     },
     {
       "name": "charts embedded in HTML",
       "passed": true,
-      "detail": "4 embedded figures"
+      "detail": "9 embedded figures"
     },
     {
       "name": "sample recalculation",
       "passed": true,
       "detail": "5 rows checked"
+    },
+    {
+      "name": "traffic funnel monotonicity",
+      "passed": true,
+      "detail": "1830 rows checked"
+    },
+    {
+      "name": "traffic order conservation",
+      "passed": true,
+      "detail": "2924 vs 2924"
+    },
+    {
+      "name": "category roll-up",
+      "passed": true,
+      "detail": "8095612.2 vs 8095612.2"
+    },
+    {
+      "name": "region roll-up",
+      "passed": true,
+      "detail": "8095612.2 vs 8095612.2"
+    },
+    {
+      "name": "fulfilment funnel monotonicity",
+      "passed": true,
+      "detail": "下单/发货/签收 = [3000, 2067, 1630]"
+    },
+    {
+      "name": "sell-through denominator from catalog",
+      "passed": true,
+      "detail": "45 / 50"
+    },
+    {
+      "name": "refund and cancel split",
+      "passed": true,
+      "detail": "9835592.500000006 vs 8095612.2 + 595106.6 + 1144873.7"
     }
   ],
   "files": [
@@ -64,6 +99,11 @@
     "fig1_monthly_trend.png",
     "fig2_channel_structure.png",
     "fig3_product_pareto.png",
-    "fig4_rfm_profile.png"
+    "fig4_rfm_profile.png",
+    "fig5_traffic_funnel.png",
+    "fig6_channel_traffic_quality.png",
+    "fig7_category_gmv.png",
+    "fig8_fulfilment_delivery_lag.png",
+    "fig9_fulfilment_trend.png"
   ]
 }

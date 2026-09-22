@@ -23,12 +23,27 @@
   "amounts_unresolvable_after_recalculation": 187,
   "valid_orders": 2409,
   "refund_or_cancel_orders": 591,
+  "optional_columns_supplied": [
+    "商品品类",
+    "承诺发货时效",
+    "物流商",
+    "承诺送达时效",
+    "发货时间",
+    "签收时间",
+    "退款原因"
+  ],
+  "optional_columns_absent": [],
+  "orders_with_shipping_date": 2067,
+  "orders_with_delivery_date": 1630,
+  "refund_reasons_recorded": 284,
   "rules": [
     "Deduplicate by order ID and keep the first row.",
     "Normalize mixed date formats; preserve unparseable dates as missing.",
     "Remove currency symbols and thousands separators from unit prices.",
     "Recalculate amount as unit price multiplied by quantity; preserve original amount.",
     "Keep refunded and cancelled rows but exclude them from valid-order KPIs.",
-    "Fill missing dimensions with 未知 without inventing values."
+    "Fill missing dimensions with 未知 without inventing values.",
+    "Parse shipping and delivery timestamps with the same mixed-format rules as the order date.",
+    "Treat optional columns that the file does not carry as absent, not as 未知."
   ]
 }

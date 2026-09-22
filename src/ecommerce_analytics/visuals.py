@@ -63,7 +63,16 @@ FIGURE_FILENAMES = {
     "channel_structure": "fig2_channel_structure.png",
     "product_pareto": "fig3_product_pareto.png",
     "rfm_profile": "fig4_rfm_profile.png",
+    "traffic_funnel": "fig5_traffic_funnel.png",
+    "channel_traffic_quality": "fig6_channel_traffic_quality.png",
+    "category_gmv": "fig7_category_gmv.png",
+    "fulfilment_delivery_lag": "fig8_fulfilment_delivery_lag.png",
+    "fulfilment_trend": "fig9_fulfilment_trend.png",
 }
+
+# The industry late-shipment guideline, drawn as a reference line rather than a
+# pass/fail gate -- the synthetic data is not a real operation to be judged.
+INDUSTRY_LATE_THRESHOLD = 0.04
 
 # Charts about twice as wide as the others: the pareto chart carries a long
 # rotated SKU axis, and the RFM profile is a three-panel small multiple. Both the
@@ -462,12 +471,259 @@ def rfm_segment_profile(cleaned: pd.DataFrame):
     return fig, summary
 
 
+def traffic_funnel(analysis: dict[str, Any]):
+    """Exposure -> visitors -> add-to-cart -> orders, on a log axis.
+
+    The four stages span more than two orders of magnitude (roughly 737k down to
+    2.9k), so a linear axis flattens the last two bars into invisible slivers.
+    The log axis keeps every stage readable; each bar still carries its exact
+    count and its share of exposure, so nothing is hidden behind the scale.
+    """
+    plt = _get_pyplot()
+    traffic = analysis.get("traffic") or {}
+    funnel = traffic.get("funnel") or []
+    if not traffic.get("available") or not funnel:
+        return _empty_figure("流量与转化漏斗", "无可用流量数据"), {"summary": "无可用流量数据"}
+
+    stages = [str(row["stage"]) for row in funnel]
+    counts = [int(row["count"]) for row in funnel]
+    top = counts[0] or 1
+    colours = [GREEN, "#2f7a67", BLUE, AMBER]
+
+    fig, ax = plt.subplots(figsize=(7.6, 3.4), dpi=160)
+    positions = list(range(len(stages)))
+    ax.barh(positions, counts, height=0.6, color=colours[: len(counts)], zorder=3)
+    ax.set_xscale("log")
+    ax.set_yticks(positions)
+    ax.set_yticklabels(stages, fontsize=10, color=INK)
+    ax.invert_yaxis()
+    ax.set_xlabel("数量（对数轴）", fontsize=10, color=INK)
+    _style_axes(ax, grid_axis="x")
+    for index, count in enumerate(counts):
+        ax.text(count * 1.18, index, f"{count:,}（{count / top * 100:.1f}%）", va="center", fontsize=9, color=INK)
+
+    rates = traffic.get("rates") or {}
+    order_rate = rates.get("下单转化率")
+    subtitle = f"访客→下单 {order_rate * 100:.2f}%" if order_rate is not None else "转化率不可用"
+    ax.set_title(f"流量与转化漏斗（模拟数据）· {subtitle}", fontsize=12, color=INK, pad=12)
+
+    summary = {
+        "exposure": counts[0],
+        "visitors": counts[1] if len(counts) > 1 else None,
+        "carts": counts[2] if len(counts) > 2 else None,
+        "orders": counts[3] if len(counts) > 3 else None,
+        "visit_rate": rates.get("访客率"),
+        "cart_rate": rates.get("加购率"),
+        "order_rate": order_rate,
+        "full_rate": rates.get("全链路转化率"),
+    }
+    return fig, summary
+
+
+def channel_traffic_quality(analysis: dict[str, Any]):
+    """Two panels: conversion rate by channel, and traffic share vs GMV share.
+
+    Reading them together answers the question the funnel alone cannot -- whether
+    a channel's traffic is actually worth what it costs in exposure.
+    """
+    plt = _get_pyplot()
+    traffic = analysis.get("traffic") or {}
+    channel = traffic.get("channel") or []
+    # 未知渠道没有可解释的转化率，排除后其余渠道才可比。
+    rows = [row for row in channel if row.get("渠道") != "未知" and row.get("下单转化率") is not None]
+    if not traffic.get("available") or not rows:
+        return _empty_figure("渠道流量质量", "无可用渠道流量数据"), {"summary": "无可用渠道流量数据"}
+
+    rows = sorted(rows, key=lambda row: float(row["下单转化率"]))
+    names = [str(row["渠道"]) for row in rows]
+    rates = [float(row["下单转化率"]) * 100 for row in rows]
+    exposure_share = [float(row.get("曝光份额") or 0) * 100 for row in rows]
+    gmv_share = [float(row.get("gmv_share") or 0) * 100 for row in rows]
+
+    fig, axes = plt.subplots(1, 2, figsize=(11.4, 3.4), dpi=160)
+    positions = list(range(len(names)))
+
+    axes[0].barh(positions, rates, height=0.6, color=GREEN, zorder=3)
+    span = max(rates) if rates else 1.0
+    for index, value in enumerate(rates):
+        axes[0].text(value + span * 0.03, index, f"{value:.2f}%", va="center", fontsize=9, color=INK)
+    axes[0].set_yticks(positions)
+    axes[0].set_yticklabels(names, fontsize=9.5, color=INK)
+    axes[0].set_xlim(0, span * 1.28)
+    axes[0].set_title("各渠道下单转化率", fontsize=10.5, color=INK, pad=8)
+    axes[0].set_xlabel("下单数 / 访客数", fontsize=8.5, color="#66736e")
+    _style_axes(axes[0], grid_axis="x")
+
+    offset = 0.2
+    axes[1].barh([p - offset for p in positions], exposure_share, height=0.38, color=GREY, label="曝光份额", zorder=3)
+    axes[1].barh([p + offset for p in positions], gmv_share, height=0.38, color=AMBER, label="GMV 份额", zorder=3)
+    axes[1].set_yticks(positions)
+    axes[1].set_yticklabels([""] * len(names))
+    axes[1].set_title("流量份额 vs 成交份额", fontsize=10.5, color=INK, pad=8)
+    axes[1].set_xlabel("占全部渠道的百分比（%）", fontsize=8.5, color="#66736e")
+    axes[1].legend(fontsize=8.5, frameon=False, loc="lower right")
+    _style_axes(axes[1], grid_axis="x")
+
+    fig.suptitle("渠道流量质量：流量多的渠道不等于赚钱的渠道", fontsize=12, color=INK, y=1.06)
+
+    best = max(rows, key=lambda row: float(row["下单转化率"]))
+    worst = min(rows, key=lambda row: float(row["下单转化率"]))
+    summary = {
+        "channel_count": len(rows),
+        "best_channel": str(best["渠道"]),
+        "best_conversion": round(float(best["下单转化率"]), 4),
+        "worst_channel": str(worst["渠道"]),
+        "worst_conversion": round(float(worst["下单转化率"]), 4),
+        "widest_gap_channel": str(max(rows, key=lambda row: float(row.get("份额差") or 0))["渠道"]),
+    }
+    return fig, summary
+
+
+def category_gmv(analysis: dict[str, Any]):
+    """GMV by category, largest at the top."""
+    plt = _get_pyplot()
+    sales = analysis.get("sales") or {}
+    category = sales.get("category") or []
+    if not category:
+        return _empty_figure("品类 GMV 结构", "无可用品类数据"), {"summary": "无可用品类数据"}
+
+    # barh draws index 0 at the bottom, so ascending order puts the largest on top.
+    rows = sorted(category, key=lambda row: float(row["gmv"]))
+    names = [str(row["商品品类"]) for row in rows]
+    gmv = [float(row["gmv"]) for row in rows]
+    shares = [float(row.get("gmv_share") or 0) for row in rows]
+
+    fig, ax = plt.subplots(figsize=(7.6, 3.6), dpi=160)
+    positions = list(range(len(names)))
+    ax.barh(positions, gmv, height=0.62, color=GREEN, zorder=3)
+    span = max(gmv) if gmv else 1.0
+    for index, (value, share) in enumerate(zip(gmv, shares, strict=True)):
+        ax.text(value + span * 0.02, index, f"¥{value / 10000:,.1f}万（{share * 100:.1f}%）", va="center", fontsize=8.6, color=INK)
+    ax.set_yticks(positions)
+    ax.set_yticklabels(names, fontsize=9.5, color=INK)
+    ax.set_xlim(0, span * 1.42)
+    ax.set_xlabel("GMV（元）", fontsize=10, color=INK)
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value / 10000:,.0f}"))
+    _style_axes(ax, grid_axis="x")
+    ax.set_title("品类 GMV 结构（模拟数据）", fontsize=12, color=INK, pad=12)
+
+    ranked = sorted(category, key=lambda row: float(row["gmv"]), reverse=True)
+    top = ranked[0]
+    summary = {
+        "category_count": len(ranked),
+        "top_category": str(top["商品品类"]),
+        "top_gmv": round(float(top["gmv"]), 2),
+        "top_share": round(float(top.get("gmv_share") or 0), 4),
+        "top3_share": round(sum(float(row.get("gmv_share") or 0) for row in ranked[:3]), 4),
+        "lowest_category": str(ranked[-1]["商品品类"]),
+        "lowest_share": round(float(ranked[-1].get("gmv_share") or 0), 4),
+    }
+    return fig, summary
+
+
+def fulfilment_delivery_lag(analysis: dict[str, Any]):
+    """Distribution of shipping lag, with the late-shipment rate called out."""
+    plt = _get_pyplot()
+    fulfilment = analysis.get("fulfilment") or {}
+    histogram = fulfilment.get("ship_lag_histogram") or []
+    late = fulfilment.get("late") or {}
+    if not fulfilment.get("available") or not histogram:
+        return _empty_figure("发货时效分布", "无可用履约数据"), {"summary": "无可用履约数据"}
+
+    days = [int(row["days"]) for row in histogram]
+    counts = [int(row["orders"]) for row in histogram]
+    peak = max(counts) if counts else 1
+
+    fig, ax = plt.subplots(figsize=(7.6, 3.4), dpi=160)
+    ax.bar(days, counts, width=0.62, color=GREEN, zorder=3)
+    for day, count in zip(days, counts, strict=True):
+        ax.text(day, count + peak * 0.02, f"{count:,}", ha="center", fontsize=8.6, color=INK)
+    ax.set_xlabel("发货时效 = 发货时间 − 下单日期（天）", fontsize=10, color=INK)
+    ax.set_ylabel("订单数", fontsize=10, color=INK)
+    ax.set_xticks(days)
+    ax.set_ylim(0, peak * 1.18)
+    _style_axes(ax)
+
+    late_rate = late.get("late_rate")
+    threshold = late.get("industry_threshold")
+    if late_rate is not None and threshold is not None:
+        ax.set_title(
+            f"发货时效分布（模拟数据）· 迟发率 {late_rate * 100:.2f}%，行业考核线 {threshold * 100:.0f}%",
+            fontsize=11.5,
+            color=INK,
+            pad=12,
+        )
+    else:
+        ax.set_title("发货时效分布（模拟数据）", fontsize=12, color=INK, pad=12)
+
+    summary = {
+        "mean_lag": (fulfilment.get("ship_lag") or {}).get("mean"),
+        "median_lag": (fulfilment.get("ship_lag") or {}).get("median"),
+        "max_lag": (fulfilment.get("ship_lag") or {}).get("max"),
+        "shipped_orders": late.get("shipped_orders"),
+        "late_orders": late.get("late_orders"),
+        "late_rate": late_rate,
+        "industry_threshold": threshold,
+        "above_industry_line": late.get("above_industry_line"),
+    }
+    return fig, summary
+
+
+def fulfilment_trend(analysis: dict[str, Any]):
+    """Late-shipment and overdue rates by month, against the 4% guideline."""
+    plt = _get_pyplot()
+    fulfilment = analysis.get("fulfilment") or {}
+    monthly = fulfilment.get("monthly") or []
+    usable = [row for row in monthly if not row.get("small_sample")]
+    if not fulfilment.get("available") or not usable:
+        return _empty_figure("迟发与逾期趋势", "无可用履约趋势数据"), {"summary": "无可用履约趋势数据"}
+
+    months = [str(row["month"]) for row in usable]
+    late_rates = [float(row["late_rate"]) * 100 if row.get("late_rate") is not None else None for row in usable]
+    overdue_rates = [float(row["overdue_rate"]) * 100 if row.get("overdue_rate") is not None else None for row in usable]
+
+    fig, ax = plt.subplots(figsize=(7.6, 3.4), dpi=160)
+    ax.plot(months, late_rates, color=AMBER, marker="o", markersize=4, linewidth=1.8, label="迟发率")
+    ax.plot(months, overdue_rates, color=BLUE, marker="s", markersize=4, linewidth=1.8, label="逾期率")
+    ax.axhline(
+        INDUSTRY_LATE_THRESHOLD * 100,
+        color="#c25b4a",
+        linewidth=1.0,
+        linestyle="--",
+        label="行业迟发考核线 4%",
+    )
+    ax.set_ylabel("比率（%）", fontsize=10, color=INK)
+    ax.set_xlabel("月份", fontsize=10, color=INK)
+    ax.tick_params(axis="x", rotation=45)
+    ax.legend(fontsize=8.6, frameon=False, loc="upper right")
+    _style_axes(ax)
+    ax.set_title("迟发率与逾期率月度趋势（模拟数据）", fontsize=12, color=INK, pad=12)
+
+    valid_late = [value for value in late_rates if value is not None]
+    valid_overdue = [value for value in overdue_rates if value is not None]
+    peak_index = late_rates.index(max(valid_late)) if valid_late else None
+    summary = {
+        "months": len(usable),
+        "mean_late_rate": round(sum(valid_late) / len(valid_late) / 100, 4) if valid_late else None,
+        "mean_overdue_rate": round(sum(valid_overdue) / len(valid_overdue) / 100, 4) if valid_overdue else None,
+        "peak_late_month": months[peak_index] if peak_index is not None else None,
+        "peak_late_rate": round(max(valid_late) / 100, 4) if valid_late else None,
+        "months_above_line": sum(1 for value in valid_late if value > INDUSTRY_LATE_THRESHOLD * 100),
+    }
+    return fig, summary
+
+
 def _iter_figures(analysis: dict[str, Any], cleaned: pd.DataFrame):
-    """Yield ``(key, figure, summary)`` for the four charts, in reading order."""
+    """Yield ``(key, figure, summary)`` for every chart, in reading order."""
     yield "monthly_trend", *gmv_monthly_trend(analysis)
     yield "channel_structure", *channel_share_ring(analysis)
     yield "product_pareto", *product_pareto(analysis)
     yield "rfm_profile", *rfm_segment_profile(cleaned)
+    yield "traffic_funnel", *traffic_funnel(analysis)
+    yield "channel_traffic_quality", *channel_traffic_quality(analysis)
+    yield "category_gmv", *category_gmv(analysis)
+    yield "fulfilment_delivery_lag", *fulfilment_delivery_lag(analysis)
+    yield "fulfilment_trend", *fulfilment_trend(analysis)
 
 
 def build_all_figures(

@@ -4,5 +4,14 @@
   "base_unique_orders": 3000,
   "rows_with_duplicates": 3090,
   "duplicate_rows": 90,
+  "traffic_rows": 1830,
+  "catalog_rows": 50,
+  "unsold_products": [
+    "P013",
+    "P014",
+    "P024",
+    "P025",
+    "P031"
+  ],
   "notice": "Synthetic practice data. Not real company or customer data."
 }

@@ -43,17 +43,21 @@ def default_view() -> AppTest:
     return _run()
 
 
-def _dataframe_with(app: AppTest, column: str):
-    """Find a rendered table by one of its columns.
+def _dataframe_with(app: AppTest, *columns: str):
+    """Find a rendered table by the columns it carries.
 
     ``AppTest.dataframe`` follows the element tree, where column nesting puts the
-    sidebar table and the two side-by-side tables in a non-obvious order, so
-    looking tables up by index is brittle.
+    sidebar table and the side-by-side tables in a non-obvious order, so looking
+    tables up by index is brittle. Several tables now share a ``渠道`` column
+    (the channel detail, the channel traffic quality and the refund-rate tables),
+    so a single column is no longer a unique key -- pass every column the target
+    table is expected to have and the first exact match wins.
     """
     for frame in app.dataframe:
-        if column in frame.value.columns:
+        if all(column in frame.value.columns for column in columns):
             return frame.value
-    raise AssertionError(f"no rendered table has a {column!r} column")
+    joined = ", ".join(repr(column) for column in columns)
+    raise AssertionError(f"no rendered table has all of: {joined}")
 
 
 def test_dashboard_renders_without_error(default_view):
@@ -71,12 +75,14 @@ def test_the_five_kpi_cards_match_the_committed_analysis(default_view, analysis)
     assert rendered["连带率"] == f"{kpi['items_per_order']:,.2f}"
 
 
-def test_all_four_charts_are_rendered(default_view):
-    assert len(default_view.image) == 4
+def test_all_nine_charts_are_rendered(default_view):
+    """``st.tabs`` runs every tab body on each rerun (the inactive ones are only
+    hidden with CSS), so all nine figures are in the element tree at once."""
+    assert len(default_view.image) == 9
 
 
 def test_the_channel_table_lists_every_channel(default_view, analysis):
-    channel_table = _dataframe_with(default_view, "渠道")
+    channel_table = _dataframe_with(default_view, "渠道", "客单价")
     assert len(channel_table) == len(analysis["channel"])
     assert list(channel_table["渠道"]) == [row["渠道"] for row in analysis["channel"]]
 

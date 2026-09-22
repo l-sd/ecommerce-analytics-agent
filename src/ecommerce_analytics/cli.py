@@ -14,9 +14,26 @@ from .deliverables import (
     write_json,
     write_validation_markdown,
 )
-from .demo_data import write_demo
+from .demo_data import read_catalog, read_traffic, write_demo
 from .pipeline import analyze_orders, clean_orders, read_orders
 from .visuals import build_all_figures
+
+# Companion tables live next to the order sheet. When they are absent the run
+# still succeeds and the dependent dimensions report themselves unavailable,
+# which is what an upload of a bare order sheet should do.
+TRAFFIC_FILENAME = "synthetic_traffic.csv"
+CATALOG_FILENAME = "synthetic_products.csv"
+
+
+def _load_companion(input_path: Path, filename: str, reader):
+    candidate = Path(input_path).parent / filename
+    if not candidate.exists():
+        return None
+    try:
+        return reader(candidate)
+    except ValueError as error:
+        print(f"Skipping {filename}: {error}")
+        return None
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -62,7 +79,9 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     raw = read_orders(args.input)
     cleaned, cleaning_log = clean_orders(raw)
-    analysis = analyze_orders(cleaned)
+    traffic = _load_companion(args.input, TRAFFIC_FILENAME, read_traffic)
+    catalog = _load_companion(args.input, CATALOG_FILENAME, read_catalog)
+    analysis = analyze_orders(cleaned, traffic=traffic, catalog=catalog)
 
     figures: dict[str, Path] = {}
     if not args.no_figures:
@@ -74,7 +93,9 @@ def main() -> None:
     write_json(output_dir / "analysis.json", analysis)
     write_excel(output_dir / "ecommerce_analysis.xlsx", cleaned, analysis, cleaning_log)
     write_html(output_dir / "report.html", analysis, cleaning_log, figures=figures)
-    validation = validate_outputs(output_dir, cleaned, analysis, cleaning_log, figures=figures)
+    validation = validate_outputs(
+        output_dir, cleaned, analysis, cleaning_log, figures=figures, traffic=traffic
+    )
     write_json(output_dir / "validation.json", validation)
     write_validation_markdown(output_dir / "validation.md", validation)
     print(f"Pipeline {validation['status']}: {output_dir}")
