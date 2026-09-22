@@ -9,6 +9,8 @@ Dataset: synthetic practice data
 - [PASS] monthly roll-up with missing dates: 9829609.1 + 164478.3
 - [PASS] Excel formula audit: 6000 formulas; bad rows: []
 - [PASS] HTML report structure: missing: []
+- [PASS] chart files written: 4 charts; missing: []
+- [PASS] charts embedded in HTML: 4 embedded figures
 - [PASS] sample recalculation: 5 rows checked
 
 Overall status: **PASSED**

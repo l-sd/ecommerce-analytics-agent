@@ -314,5 +314,37 @@
     "数据仅包含订单明细，无法计算UV、转化率、毛利率、ROI或因果效果。",
     "缺失单价或数量的订单无法重算金额，相关GMV口径会排除这些记录。",
     "RFM结果仅用于演示分析流程，不应直接转化为真实营销策略。"
-  ]
+  ],
+  "figure_insights": {
+    "monthly_trend": {
+      "peak_month": "2024-03",
+      "peak_gmv": 961676.4,
+      "trough_month": "2024-09",
+      "trough_gmv": 618237.1,
+      "swing_ratio": 0.5555,
+      "driver": "客单价",
+      "corr_orders": 0.1283,
+      "corr_aov": 0.9395
+    },
+    "channel_structure": {
+      "top_channel": "天猫",
+      "top_channel_share": 0.3455,
+      "best_aov_channel": "抖音",
+      "best_aov": 5487.1,
+      "channel_count": 6
+    },
+    "product_pareto": {
+      "top_n": 15,
+      "top_n_cumulative_share": 0.8537,
+      "skus_for_80_percent": 13,
+      "top1_share": 0.1423
+    },
+    "rfm_matrix": {
+      "customer_count": 200,
+      "segment_count": 4,
+      "top_gmv_segment": "一般客户",
+      "top_gmv_share": 0.3717,
+      "top_gmv_customers": 83
+    }
+  }
 }
