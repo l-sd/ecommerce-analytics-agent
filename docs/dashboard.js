@@ -146,7 +146,8 @@
     return panel("月度有效 GMV 趋势",`<svg class="trend" viewBox="0 0 ${w} ${h}" role="img" aria-label="月度 GMV 折线图，纵轴金额，横轴月份"><defs><linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3889e5" stop-opacity=".18"/><stop offset="1" stop-color="#3889e5" stop-opacity="0"/></linearGradient></defs>${grid}<polygon points="${poly}" class="trend-area"/><path d="${path}" class="trend-line"/>${dots}${labels}</svg><div class="legend"><span><i></i>有效 GMV（元）</span><span>按下单日期汇总</span></div>`,{note:"纵轴为 GMV 金额，横轴为月份；未标注日期的订单不进入趋势图。"});
   }
   function kpis(a) {
-    const values=[["有效 GMV",money(a.gmv),"排除退款与取消订单","¥"],["有效订单",num(a.good.length),"按订单号去重","▤"],["客单价",money(ratio(a.gmv,a.good.length)),"有效 GMV ÷ 有效订单","↗"],["有效商品件数",num(sum(a.good,"quantity")),"有效订单商品数量","▧"],["退款率",pct(ratio(a.refund.length,a.rows.length)),"退款订单 ÷ 全量订单","↻"]];
+    const gmvValue=a.gmv>=100000?`¥${(a.gmv/10000).toLocaleString("zh-CN",{maximumFractionDigits:1})}万`:money(a.gmv);
+    const values=[["有效 GMV",gmvValue,"排除退款与取消订单","¥"],["有效订单",num(a.good.length),"按订单号去重","▤"],["客单价",money(ratio(a.gmv,a.good.length)),"有效 GMV ÷ 有效订单","↗"],["有效商品件数",num(sum(a.good,"quantity")),"有效订单商品数量","▧"],["退款率",pct(ratio(a.refund.length,a.rows.length)),"退款订单 ÷ 全量订单","↻"]];
     $("#kpis").innerHTML=values.map(([label,value,note,glyph])=>`<article class="kpi-card"><div class="kpi-top"><span>${label}</span><span class="kpi-glyph">${glyph}</span></div><div class="kpi-value">${value}</div><div class="kpi-note">${note}</div></article>`).join("");
   }
   function overview(a) {
@@ -210,6 +211,7 @@
     const rows=filtered();const a=aggregate(rows);const [title,desc]=PAGE_INFO[page];
     $("#page-name").textContent=title;$("#page-title").textContent=title;$("#page-desc").textContent=desc;
     document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+    $("#kpis").hidden=page!=="overview";
     kpis(a);
     const renderers={overview,channels:channelsPage,products:productsPage,users:usersPage,fulfilment:fulfilmentPage,quality:qualityPage,report:reportPage};
     $("#page-content").innerHTML=renderers[page](a);

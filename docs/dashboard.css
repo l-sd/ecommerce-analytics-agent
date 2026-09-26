@@ -56,3 +56,10 @@ td{padding:10px 11px;color:#344e69}
 .report-actions{margin:0;padding-left:20px;color:#49627c;font-size:12px;line-height:1.9}
 .report-actions strong{color:#274765}
 @media(max-width:760px){.content{padding:18px 13px}.page-heading h1{font-size:23px}.kpi-value{font-size:21px}.bar-row,.panel.wide .bar-row{grid-template-columns:minmax(78px,1.1fr) minmax(45px,2.4fr) minmax(86px,1fr);gap:8px;font-size:11px}.chart-axis{margin-left:calc(24% + 2px);font-size:8px}.trend{min-height:130px}.trend-axis-label,.trend-label{font-size:13px}.report-insights{grid-template-columns:1fr}.report-scope span{min-width:calc(50% - 8px)}}
+
+/* Keep KPI values inside their cards at narrow viewport widths. */
+#kpis[hidden]{display:none}
+.kpi-grid,.kpi-card{min-width:0}
+.kpi-card{overflow:hidden}
+.kpi-value{font-size:clamp(17px,1.75vw,23px);line-height:1.2;letter-spacing:-.045em;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.kpi-value{font-size:clamp(16px,4.4vw,21px)}}
