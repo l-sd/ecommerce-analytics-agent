@@ -39,12 +39,13 @@
           <div><div class="eyebrow">电商业务分析 · 交互演示</div><h1 id="page-title">经营总览</h1><p id="page-desc">从订单表现、渠道贡献和经营趋势快速了解业务概况。</p></div>
           <div class="heading-actions"><button class="button secondary" id="download-summary">下载分析摘要</button><button class="button primary" id="download-orders">下载筛选明细</button></div>
         </div>
-        <section class="upload-card" aria-label="上传订单数据">
-          <div><strong>分析自己的订单数据</strong><span>上传 CSV / TSV，至少包含订单号和金额（或单价、数量）；Excel 请先另存为 CSV。多商品订单请提供商品行金额，避免重复统计订单总额。</span></div>
-          <label class="button primary upload-button" for="order-upload">选择订单文件</label>
+        <section id="upload-card" class="upload-card" aria-label="上传订单数据；点击选择或拖拽 CSV、TSV 文件至此" tabindex="0">
+          <div class="upload-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 32V9m0 0-9 9m9-9 9 9M11 29v9a3 3 0 0 0 3 3h20a3 3 0 0 0 3-3v-9"/></svg></div>
+          <div class="upload-copy"><strong id="upload-title">上传订单数据，生成专属分析</strong><span id="upload-help">支持 CSV / TSV，点击选择文件或拖拽到此区域。至少包含订单号和金额（或单价、数量）；Excel 请先另存为 CSV。</span><span id="upload-status" class="upload-status" aria-live="polite">当前展示可交互的模拟数据</span></div>
+          <div class="upload-actions"><label id="upload-button-label" class="button primary upload-button" for="order-upload">点击上传文件</label>
           <input id="order-upload" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values">
-          <button id="restore-demo" class="button secondary" type="button" hidden>恢复模拟数据</button>
-          <a class="template-link" href="./order-upload-template.csv" download>下载 CSV 模板</a>
+          <button id="restore-demo" class="button secondary" type="button" hidden>移除文件 / 恢复演示</button>
+          <a class="template-link" href="./order-upload-template.csv" download>下载 CSV 模板</a></div>
         </section>
         <div class="filter-card">
           <div class="filter-title"><span class="filter-icon">⌕</span>分析筛选</div>
@@ -57,10 +58,10 @@
         <div id="error" class="error-card" hidden></div>
         <section id="kpis" class="kpi-grid" aria-label="核心指标"></section>
         <section id="page-content" class="panel-grid"></section>
-        <section class="detail-panel">
-          <div class="panel-heading"><div><h2>筛选订单明细</h2><p>根据上方日期和渠道条件筛选，最多展示 500 行；可下载完整筛选结果。</p></div><span id="detail-count" class="count-pill"></span></div>
+        <details class="detail-panel">
+          <summary class="panel-heading"><div><h2>筛选订单明细</h2><p>按需展开查看，最多展示 500 行；可下载完整筛选结果。</p></div><span id="detail-count" class="count-pill"></span></summary>
           <div class="table-wrap"><table id="detail-table"></table></div>
-        </section>
+        </details>
         <footer id="footer-note">指标仅按当前模拟数据计算。GMV 与订单金额使用有效订单口径；退款率以全量订单为分母；转化率只使用配套流量表。</footer>
       </section>
     </main>
