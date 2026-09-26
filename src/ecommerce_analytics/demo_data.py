@@ -41,6 +41,7 @@ import datetime as dt
 import json
 import random
 import zlib
+from decimal import Decimal
 from pathlib import Path
 
 import pandas as pd
@@ -179,12 +180,13 @@ def _q(key: str, salt: str, buckets: int = 10_000) -> float:
 
 def _pick(keys: list, weights: list[float], q: float):
     """Inverse-CDF sampling: turn a quantile into one of ``keys``."""
-    total = float(sum(weights))
+    exact_weights = [Decimal(str(weight)) for weight in weights]
+    total = sum(exact_weights)
     if total <= 0:
         return keys[-1]
-    target = q * total
-    accumulated = 0.0
-    for key, weight in zip(keys, weights, strict=True):
+    target = Decimal(str(q)) * total
+    accumulated = Decimal(0)
+    for key, weight in zip(keys, exact_weights, strict=True):
         accumulated += weight
         if target <= accumulated:
             return key

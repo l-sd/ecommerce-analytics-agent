@@ -9,10 +9,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
-from ecommerce_analytics.demo_data import write_demo
+from ecommerce_analytics.demo_data import CARRIER_WEIGHTS, CARRIERS, _pick, write_demo
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 COMMITTED_DATASET = PROJECT_ROOT / "data" / "synthetic_orders.csv"
@@ -25,12 +24,6 @@ PORTFOLIO_ROWS = 4854
 def _normalise(payload: bytes) -> bytes:
     """Ignore line-ending differences between checkouts and platforms."""
     return payload.replace(b"\r\n", b"\n")
-
-
-def _unique_orders(path: Path) -> pd.DataFrame:
-    """Compare source orders independent of duplicate selection and shuffle order."""
-    frame = pd.read_csv(path, dtype=str, keep_default_na=False, encoding="utf-8-sig")
-    return frame.drop_duplicates("订单号").sort_values("订单号").reset_index(drop=True)
 
 
 @pytest.mark.skipif(not COMMITTED_DATASET.exists(), reason="committed dataset is absent")
@@ -73,6 +66,10 @@ def test_different_seeds_produce_different_data(tmp_path):
     assert first.read_bytes() != second.read_bytes()
 
 
+def test_carrier_boundary_is_stable_across_python_versions():
+    assert _pick(CARRIERS, CARRIER_WEIGHTS, 0.88) == "圆通"
+
+
 def test_portfolio_demo_has_4999_reproducible_order_rows_and_companions(tmp_path):
     regenerated = tmp_path / "synthetic_orders.csv"
     manifest = write_demo(regenerated, rows=PORTFOLIO_ROWS, seed=DOCUMENTED_SEED)
@@ -84,9 +81,9 @@ def test_portfolio_demo_has_4999_reproducible_order_rows_and_companions(tmp_path
     assert manifest["catalog_rows"] == 50
 
     committed_dir = PROJECT_ROOT / "data" / "portfolio_demo"
-    committed_orders = committed_dir / "synthetic_orders.csv"
-    assert len(pd.read_csv(committed_orders)) == manifest["rows_with_duplicates"]
-    pd.testing.assert_frame_equal(_unique_orders(regenerated), _unique_orders(committed_orders))
+    assert _normalise(regenerated.read_bytes()) == _normalise(
+        (committed_dir / "synthetic_orders.csv").read_bytes()
+    )
     assert _normalise((tmp_path / "synthetic_traffic.csv").read_bytes()) == _normalise(
         (committed_dir / "synthetic_traffic.csv").read_bytes()
     )
