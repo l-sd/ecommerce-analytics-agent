@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="基于可复现模拟数据的电商订单分析作品集，演示经营、渠道、商品、用户、履约与数据质量分析。">
+  <title>电商经营分析 | 交互式 Demo</title>
+  <link rel="stylesheet" href="./dashboard.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="./" aria-label="电商经营分析首页">
+        <span class="brand-mark">E</span>
+        <span><strong>经营分析</strong><small>ECOMMERCE ANALYTICS</small></span>
+      </a>
+      <div class="nav-label">分析工作台</div>
+      <nav id="navigation" aria-label="分析页面">
+        <button class="nav-item active" data-page="overview"><span class="nav-icon">▦</span>经营总览</button>
+        <button class="nav-item" data-page="channels"><span class="nav-icon">↗</span>渠道与转化</button>
+        <button class="nav-item" data-page="products"><span class="nav-icon">▤</span>商品分析</button>
+        <button class="nav-item" data-page="users"><span class="nav-icon">◎</span>用户 / RFM</button>
+        <button class="nav-item" data-page="fulfilment"><span class="nav-icon">⇢</span>退款与履约</button>
+        <button class="nav-item" data-page="quality"><span class="nav-icon">✓</span>数据质量</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="demo-badge"><span></span>模拟数据 · 仅用于演示</div>
+        <a href="https://github.com/l-sd/ecommerce-analytics-agent" target="_blank" rel="noreferrer">查看 GitHub 项目 ↗</a>
+      </div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="crumb">作品集 <span>/</span> <strong id="page-name">经营总览</strong></div>
+        <div class="topbar-right"><span class="live-dot"></span>本地浏览器计算 <span class="avatar">LB</span></div>
+      </header>
+      <section class="content">
+        <div class="page-heading">
+          <div><div class="eyebrow">电商业务分析 · 交互演示</div><h1 id="page-title">经营总览</h1><p id="page-desc">从订单表现、渠道贡献和经营趋势快速了解业务概况。</p></div>
+          <div class="heading-actions"><button class="button secondary" id="download-summary">下载分析摘要</button><button class="button primary" id="download-orders">下载筛选明细</button></div>
+        </div>
+        <div class="filter-card">
+          <div class="filter-title"><span class="filter-icon">⌕</span>分析筛选</div>
+          <label>开始日期<input id="date-start" type="date"></label>
+          <label>结束日期<input id="date-end" type="date"></label>
+          <div class="channel-filter"><span class="filter-label">销售渠道</span><div id="channel-options" class="channel-options"></div></div>
+          <button id="reset-filter" class="text-button">重置筛选</button>
+        </div>
+        <div id="data-notice" class="notice"><strong>模拟练习数据</strong><span>固定种子生成 · 4,999 行原始记录 · 含 145 行重复记录 · 不代表真实企业经营情况</span></div>
+        <div id="error" class="error-card" hidden></div>
+        <section id="kpis" class="kpi-grid" aria-label="核心指标"></section>
+        <section id="page-content" class="panel-grid"></section>
+        <section class="detail-panel">
+          <div class="panel-heading"><div><h2>筛选订单明细</h2><p>根据上方日期和渠道条件筛选，最多展示 500 行；可下载完整筛选结果。</p></div><span id="detail-count" class="count-pill"></span></div>
+          <div class="table-wrap"><table id="detail-table"></table></div>
+        </section>
+        <footer>指标仅按当前模拟数据计算。GMV 与订单金额使用有效订单口径；退款率以全量订单为分母；转化率只使用配套流量表。</footer>
+      </section>
+    </main>
+  </div>
+  <script src="./dashboard.js" defer></script>
+</body>
+</html>
