@@ -39,6 +39,13 @@
           <div><div class="eyebrow">电商业务分析 · 交互演示</div><h1 id="page-title">经营总览</h1><p id="page-desc">从订单表现、渠道贡献和经营趋势快速了解业务概况。</p></div>
           <div class="heading-actions"><button class="button secondary" id="download-summary">下载分析摘要</button><button class="button primary" id="download-orders">下载筛选明细</button></div>
         </div>
+        <section class="upload-card" aria-label="上传订单数据">
+          <div><strong>分析自己的订单数据</strong><span>上传 CSV / TSV，至少包含订单号和金额（或单价、数量）；Excel 请先另存为 CSV。多商品订单请提供商品行金额，避免重复统计订单总额。</span></div>
+          <label class="button primary upload-button" for="order-upload">选择订单文件</label>
+          <input id="order-upload" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values">
+          <button id="restore-demo" class="button secondary" type="button" hidden>恢复模拟数据</button>
+          <a class="template-link" href="./order-upload-template.csv" download>下载 CSV 模板</a>
+        </section>
         <div class="filter-card">
           <div class="filter-title"><span class="filter-icon">⌕</span>分析筛选</div>
           <label>开始日期<input id="date-start" type="date"></label>
@@ -54,7 +61,7 @@
           <div class="panel-heading"><div><h2>筛选订单明细</h2><p>根据上方日期和渠道条件筛选，最多展示 500 行；可下载完整筛选结果。</p></div><span id="detail-count" class="count-pill"></span></div>
           <div class="table-wrap"><table id="detail-table"></table></div>
         </section>
-        <footer>指标仅按当前模拟数据计算。GMV 与订单金额使用有效订单口径；退款率以全量订单为分母；转化率只使用配套流量表。</footer>
+        <footer id="footer-note">指标仅按当前模拟数据计算。GMV 与订单金额使用有效订单口径；退款率以全量订单为分母；转化率只使用配套流量表。</footer>
       </section>
     </main>
   </div>
