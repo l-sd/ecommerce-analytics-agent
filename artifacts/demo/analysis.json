@@ -154,6 +154,7 @@
   "products_top15": [
     {
       "product_normalized": "iphone15pro256g",
+      "product_name": "iPhone 15 Pro 256G",
       "gmv": 1583824.0,
       "orders": 63,
       "quantity": 176.0,
@@ -162,6 +163,7 @@
     },
     {
       "product_normalized": "美的1.5匹空调",
+      "product_name": "美的 1.5匹空调",
       "gmv": 803313.0,
       "orders": 91,
       "quantity": 287.0,
@@ -170,6 +172,7 @@
     },
     {
       "product_normalized": "荣耀magic6",
+      "product_name": "荣耀 Magic6",
       "gmv": 631842.0,
       "orders": 52,
       "quantity": 158.0,
@@ -178,6 +181,7 @@
     },
     {
       "product_normalized": "索尼wh-1000xm5耳机",
+      "product_name": "索尼 WH-1000XM5 耳机",
       "gmv": 575760.0,
       "orders": 86,
       "quantity": 240.0,
@@ -186,6 +190,7 @@
     },
     {
       "product_normalized": "华为mate60pro",
+      "product_name": "华为 Mate 60 Pro",
       "gmv": 559920.0,
       "orders": 28,
       "quantity": 80.0,
@@ -194,6 +199,7 @@
     },
     {
       "product_normalized": "iphone15128g",
+      "product_name": "iPhone 15 128G",
       "gmv": 479920.0,
       "orders": 25,
       "quantity": 80.0,
@@ -202,6 +208,7 @@
     },
     {
       "product_normalized": "小米1412+256g",
+      "product_name": "小米 14 12+256G",
       "gmv": 477189.0,
       "orders": 37,
       "quantity": 111.0,
@@ -210,6 +217,7 @@
     },
     {
       "product_normalized": "海尔10kg滚筒洗衣机",
+      "product_name": "海尔 10kg 滚筒洗衣机",
       "gmv": 438669.0,
       "orders": 75,
       "quantity": 231.0,
@@ -218,6 +226,7 @@
     },
     {
       "product_normalized": "airpodspro2",
+      "product_name": "AirPods Pro 2",
       "gmv": 408285.0,
       "orders": 69,
       "quantity": 215.0,
@@ -226,6 +235,7 @@
     },
     {
       "product_normalized": "华为平板matepad11",
+      "product_name": "华为平板 MatePad 11",
       "gmv": 395820.0,
       "orders": 62,
       "quantity": 180.0,
@@ -234,6 +244,7 @@
     },
     {
       "product_normalized": "小米电视65寸",
+      "product_name": "小米电视 65寸",
       "gmv": 353882.0,
       "orders": 36,
       "quantity": 118.0,
@@ -242,6 +253,7 @@
     },
     {
       "product_normalized": "米家扫地机器人",
+      "product_name": "米家扫地机器人",
       "gmv": 249444.0,
       "orders": 58,
       "quantity": 156.0,
@@ -250,6 +262,7 @@
     },
     {
       "product_normalized": "redmik70",
+      "product_name": "Redmi K70",
       "gmv": 229908.0,
       "orders": 32,
       "quantity": 92.0,
@@ -258,6 +271,7 @@
     },
     {
       "product_normalized": "罗技mxmaster3s鼠标",
+      "product_name": "罗技 MX Master 3S 鼠标",
       "gmv": 150285.0,
       "orders": 68,
       "quantity": 215.0,
@@ -266,6 +280,7 @@
     },
     {
       "product_normalized": "雅诗兰黛小棕瓶",
+      "product_name": "雅诗兰黛 小棕瓶",
       "gmv": 145350.0,
       "orders": 54,
       "quantity": 153.0,
