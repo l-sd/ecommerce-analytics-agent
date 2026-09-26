@@ -8,6 +8,7 @@
     users: ["用户 / RFM", "查看复购、用户价值分层与消费贡献集中度。"],
     fulfilment: ["退款与履约", "用全量订单观察退款，用实际发货与签收记录衡量履约时效。"],
     quality: ["数据质量", "复核重复、缺失、金额异常和指标口径，查看订单级数据明细。"],
+    report: ["分析报告", "汇总当前筛选范围内的经营表现、主要发现与数据限制。"],
   };
   const $ = (q) => document.querySelector(q);
   const money = (n) => `¥${Number(n || 0).toLocaleString("zh-CN", { maximumFractionDigits: 0 })}`;
@@ -132,16 +133,17 @@
   function barPanel(title, rows, format=(x)=>num(x), options={}) {
     if(!rows.length) return panel(title,'<div class="empty">当前筛选下暂无可用数据</div>',options);
     const max=Math.max(...rows.map(x=>x.value),1), limit=options.limit||rows.length;
-    const body=rows.slice(0,limit).map((x,i)=>`<div class="bar-row"><span class="bar-label" title="${safe(x.name)}">${safe(x.name)}</span><span class="bar-track"><span class="bar-fill" style="display:block;width:${Math.max(1,x.value/max*100)}%;background:${COLORS[i%COLORS.length]}"></span></span><span class="bar-value">${safe(format(x.value,x))}</span></div>`).join("");
-    return panel(title,`<div class="chart-bars">${body}</div>`,options);
+    const body=rows.slice(0,limit).map((x,i)=>{const formatted=String(format(x.value,x)),parts=formatted.split(" · 累计 "),share=x.value/max*100;return `<div class="bar-row"><span class="bar-label" title="${safe(x.name)}">${safe(x.name)}</span><span class="bar-track" role="img" aria-label="${safe(x.name)}：${safe(formatted)}，为同图最大值的 ${pct(share/100)}"><span class="bar-fill" style="display:block;width:${Math.max(1,share)}%;--bar-color:${COLORS[i%COLORS.length]}"></span></span><span class="bar-value"><strong>${safe(parts[0])}</strong>${parts[1]?`<small>累计 ${safe(parts[1])}</small>`:""}</span></div>`;}).join("");
+    return panel(title,`<div class="chart-bars">${body}</div><div class="chart-axis"><span>0</span><span>25%</span><span>50%</span><span>75%</span><span>100% · 同图最大值</span></div>`,options);
   }
   function panel(title,body,options={}) {return `<article class="panel ${options.wide?'wide':''}"><div class="panel-heading"><div><h2>${title}</h2>${options.note?`<p>${options.note}</p>`:""}</div>${options.tag?`<span class="panel-tag">${options.tag}</span>`:""}</div>${body}${options.definition?`<p class="definition">${options.definition}</p>`:""}</article>`;}
   function table(headers, rows) {return `<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th>${safe(h)}</th>`).join("")}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="${headers.length}">暂无数据</td></tr>`}</tbody></table></div>`;}
   function trendPanel(rows) {
     if(!rows.length)return panel("月度 GMV 趋势",'<div class="empty">当前筛选下暂无可用数据</div>');
-    const w=650,h=175,pad={l:8,r:12,t:16,b:25};const values=rows.map(x=>x.value);const max=Math.max(...values,1);const points=rows.map((x,i)=>{const px=pad.l+(rows.length===1?0:i*(w-pad.l-pad.r)/(rows.length-1));const py=pad.t+(h-pad.t-pad.b)*(1-x.value/max);return [px,py,x];});const path=points.map((p,i)=>`${i?'L':'M'}${p[0]},${p[1]}`).join(' ');const poly=`${pad.l},${h-pad.b} ${points.map(p=>`${p[0]},${p[1]}`).join(' ')} ${w-pad.r},${h-pad.b}`;
-    const labels=rows.map((x,i)=>i%Math.ceil(rows.length/6)===0||i===rows.length-1?`<text x="${points[i][0]}" y="${h-5}" text-anchor="middle" class="trend-label">${safe(x.name.slice(5))}</text>`:"").join("");const dots=points.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" class="trend-point"><title>${safe(p[2].name)} · ${money(p[2].value)}</title></circle>`).join("");
-    return panel("月度有效 GMV 趋势",`<svg class="trend" viewBox="0 0 ${w} ${h}" role="img" aria-label="月度 GMV 折线图"><defs><linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3889e5" stop-opacity=".18"/><stop offset="1" stop-color="#3889e5" stop-opacity="0"/></linearGradient></defs><line x1="${pad.l}" y1="${h-pad.b}" x2="${w-pad.r}" y2="${h-pad.b}" class="trend-grid"/><line x1="${pad.l}" y1="${pad.t+40}" x2="${w-pad.r}" y2="${pad.t+40}" class="trend-grid"/><line x1="${pad.l}" y1="${pad.t+85}" x2="${w-pad.r}" y2="${pad.t+85}" class="trend-grid"/><polygon points="${poly}" class="trend-area"/><path d="${path}" class="trend-line"/>${dots}${labels}</svg><div class="legend"><span><i></i>有效 GMV</span><span>按下单日期汇总</span></div>`,{note:"筛选范围内按月聚合，未标注日期的订单不进入趋势图。"});
+    rows=[...rows].sort((a,b)=>a.name.localeCompare(b.name));
+    const w=720,h=230,pad={l:68,r:16,t:18,b:34};const values=rows.map(x=>x.value);const max=Math.max(...values,1),topTick=Math.ceil(max/4);const points=rows.map((x,i)=>{const px=pad.l+(rows.length===1?0:i*(w-pad.l-pad.r)/(rows.length-1));const py=pad.t+(h-pad.t-pad.b)*(1-x.value/(topTick*4));return [px,py,x];});const path=points.map((p,i)=>`${i?'L':'M'}${p[0]},${p[1]}`).join(' ');const poly=`${pad.l},${h-pad.b} ${points.map(p=>`${p[0]},${p[1]}`).join(' ')} ${w-pad.r},${h-pad.b}`;
+    const labels=rows.map((x,i)=>i%Math.ceil(rows.length/8)===0||i===rows.length-1?`<text x="${points[i][0]}" y="${h-8}" text-anchor="middle" class="trend-label">${safe(x.name.slice(5))}月</text>`:"").join("");const dots=points.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" class="trend-point"><title>${safe(p[2].name)} · ${money(p[2].value)}</title></circle>`).join("");const grid=Array.from({length:5},(_,i)=>{const y=pad.t+(h-pad.t-pad.b)*i/4;return `<line x1="${pad.l}" y1="${y}" x2="${w-pad.r}" y2="${y}" class="trend-grid"/><text x="${pad.l-10}" y="${y+4}" text-anchor="end" class="trend-axis-label">${money(topTick*(4-i))}</text>`;}).join("");
+    return panel("月度有效 GMV 趋势",`<svg class="trend" viewBox="0 0 ${w} ${h}" role="img" aria-label="月度 GMV 折线图，纵轴金额，横轴月份"><defs><linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3889e5" stop-opacity=".18"/><stop offset="1" stop-color="#3889e5" stop-opacity="0"/></linearGradient></defs>${grid}<polygon points="${poly}" class="trend-area"/><path d="${path}" class="trend-line"/>${dots}${labels}</svg><div class="legend"><span><i></i>有效 GMV（元）</span><span>按下单日期汇总</span></div>`,{note:"纵轴为 GMV 金额，横轴为月份；未标注日期的订单不进入趋势图。"});
   }
   function kpis(a) {
     const values=[["有效 GMV",money(a.gmv),"排除退款与取消订单","¥"],["有效订单",num(a.good.length),"按订单号去重","▤"],["客单价",money(ratio(a.gmv,a.good.length)),"有效 GMV ÷ 有效订单","↗"],["有效商品件数",num(sum(a.good,"quantity")),"有效订单商品数量","▧"],["退款率",pct(ratio(a.refund.length,a.rows.length)),"退款订单 ÷ 全量订单","↻"]];
@@ -184,6 +186,20 @@
     const cells=pairs.map(([label,value])=>`<div class="quality-item"><span>${label}</span><strong>${num(value)}</strong></div>`).join("");
     return panel("原始数据体检",`<div class="quality-list">${cells}</div>`,{wide:true,note:"质量计数基于全部 4,999 行原始样本；清洗按订单号保留首条，并按单价 × 数量重算金额。"})+panel("关键指标定义",table(["指标","计算口径","使用范围"],[["有效 GMV","有效订单金额之和","状态非已退款/已取消"],["客单价","有效 GMV ÷ 有效订单数","与 GMV 同一分母"],["退款率","退款订单 ÷ 全量订单","退款与履约页面"],["下单转化率","流量表下单数 ÷ 访客数","只使用配套流量表"],["动销率","有销量在售 SKU ÷ 在售 SKU","分母来自商品目录"],["迟发率","超时发货订单 ÷ 已发货订单","不含待发货订单"]]),{wide:true,note:"缺少对应字段时不推算或填补业务指标。"})+panel("分析校验",'<div class="quality-list"><div class="quality-item"><span>订单粒度</span><strong>按订单号去重</strong></div><div class="quality-item"><span>数据可追溯</span><strong>原始行 + 清洗后明细</strong></div><div class="quality-item"><span>流量转化来源</span><strong>配套流量表</strong></div><div class="quality-item"><span>动销率分母来源</span><strong>商品目录</strong></div></div>',{wide:true});
   }
+  function reportPage(a) {
+    const channel=a.channels[0], category=a.categories[0], refundRate=ratio(a.refund.length,a.rows.length), repeatRate=ratio(a.repeatCustomers,a.customers.length), lateRate=ratio(a.late.length,a.shipped.length), overdueRate=ratio(a.overdue.length,a.delivered.length);
+    const start=$("#date-start").value||"未设", end=$("#date-end").value||"未设", selected=[...document.querySelectorAll("#channel-options input:checked")].map(x=>x.value);
+    const observations=[
+      ["经营规模",`筛选范围内共有 ${num(a.rows.length)} 笔去重订单，其中 ${num(a.good.length)} 笔纳入有效 GMV；有效 GMV 为 ${money(a.gmv)}，客单价为 ${money(ratio(a.gmv,a.good.length))}。`],
+      ["渠道贡献",channel?`${safe(channel.name)}渠道的有效 GMV 最高，为 ${money(channel.value)}，占当前有效 GMV ${pct(ratio(channel.value,a.gmv))}。这是贡献结构描述，不代表渠道投放效果。`:"当前筛选范围暂无渠道 GMV 可比较。"],
+      ["商品结构",category?`${safe(category.name)}品类 GMV 最高，为 ${money(category.value)}，占比 ${pct(ratio(category.value,a.gmv))}；TOP 3 品类合计占 ${pct(ratio(a.categories.slice(0,3).reduce((s,x)=>s+x.value,0),a.gmv))}。`:"当前筛选范围暂无品类 GMV 可比较。"],
+      ["用户与履约",`已知用户复购率为 ${pct(repeatRate)}；迟发率为 ${pct(lateRate)}，签收逾期率为 ${pct(overdueRate)}。复购仅按当前样本窗口计算，履约率分母分别为已发货与已签收订单。`],
+    ];
+    const cards=observations.map(([title,text],i)=>`<article class="report-insight"><span class="report-index">0${i+1}</span><div><h3>${title}</h3><p>${text}</p></div></article>`).join("");
+    return panel("执行摘要",`<div class="report-scope"><span><b>日期范围</b>${safe(start)} 至 ${safe(end)}</span><span><b>所选渠道</b>${selected.length?safe(selected.join("、")):"未选择"}</span><span><b>筛选订单</b>${num(a.rows.length)} 笔</span></div><div class="report-insights">${cards}</div>`,{wide:true,note:"以下结论随上方日期及渠道筛选同步更新，仅描述样本中的观察结果。"})+
+      panel("经营指标摘要",table(["指标","当前结果","口径"],[["有效 GMV",money(a.gmv),"有效订单金额之和"],["有效订单",num(a.good.length),"排除退款、取消"],["客单价",money(ratio(a.gmv,a.good.length)),"有效 GMV ÷ 有效订单"],["退款率",pct(refundRate),"退款订单 ÷ 当前筛选的全量订单"],["复购率",pct(repeatRate),"有效订单数 ≥ 2 的已知用户 ÷ 已知用户"]]),{note:"所有金额按当前筛选范围计算。"})+
+      panel("结论边界与后续分析",`<ul class="report-actions"><li><strong>数据属性：</strong>订单、流量和商品目录均为固定种子生成的模拟数据，不代表真实企业表现。</li><li><strong>口径边界：</strong>转化率只使用配套流量表；动销率分母来自商品目录；退款率以全量订单为分母。</li><li><strong>日期边界：</strong>日期筛选会保留无法解析日期的订单；月度趋势仅统计日期有效的订单。</li><li><strong>解释边界：</strong>当前结果为描述性分析，无法判断渠道、商品或运营动作对结果的因果影响。</li><li><strong>建议补充：</strong>接入真实投放成本、库存、促销及售后处理时长后，再分析 ROI、库存周转和售后效率。</li></ul>`,{wide:true,note:"本报告只概括当前样本能支持的事实，不对缺少数据支撑的指标作推断。"});
+  }
   function renderDetails(rows) {
     const cols=["订单号","日期","渠道","商品名称","商品品类","数量","金额","用户ID","订单状态"];
     const display=[...rows].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0));
@@ -195,7 +211,7 @@
     $("#page-name").textContent=title;$("#page-title").textContent=title;$("#page-desc").textContent=desc;
     document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
     kpis(a);
-    const renderers={overview,channels:channelsPage,products:productsPage,users:usersPage,fulfilment:fulfilmentPage,quality:qualityPage};
+    const renderers={overview,channels:channelsPage,products:productsPage,users:usersPage,fulfilment:fulfilmentPage,quality:qualityPage,report:reportPage};
     $("#page-content").innerHTML=renderers[page](a);
     renderDetails(rows);
     window.currentDashboard={a,rows};
