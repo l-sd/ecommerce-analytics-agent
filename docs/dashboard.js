@@ -337,6 +337,7 @@
   function render() {
     const rows=filtered();const a=aggregate(rows);const [title,desc]=PAGE_INFO[page];
     $("#page-name").textContent=title;$("#page-title").textContent=title;$("#page-desc").textContent=desc;
+    $("#upload-card").hidden=page!=="overview";
     document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
     $("#kpis").hidden=page!=="overview";
     kpis(a);

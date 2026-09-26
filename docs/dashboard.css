@@ -79,6 +79,8 @@ td{padding:10px 11px;color:#344e69}
 .upload-card{position:relative;display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:19px;min-height:156px;margin:0 0 17px;padding:24px 28px;border:2px dashed #9fc3e9;border-radius:17px;background:linear-gradient(115deg,#f4f9ff 0%,#fff 72%);box-shadow:0 8px 24px rgba(35,103,171,.08);transition:border-color .16s,background .16s,box-shadow .16s;cursor:pointer}
 .upload-card:hover,.upload-card:focus-visible,.upload-card.is-dragover{border-color:#3985dc;background:linear-gradient(115deg,#eaf4ff 0%,#fff 76%);box-shadow:0 9px 26px rgba(35,103,171,.14);outline:none}
 .upload-card.has-file{border-style:solid;border-color:#a8d8ca;background:linear-gradient(115deg,#f0fbf7 0%,#fff 76%)}
+.upload-card[hidden]{display:none}
+.upload-card>.upload-icon{min-width:0;flex:none}
 .upload-icon{width:60px;height:60px;display:grid;place-items:center;border-radius:17px;background:#e5f1ff;color:#367fca}
 .upload-icon svg{width:33px;height:33px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .upload-copy{display:grid;gap:7px;min-width:0}
