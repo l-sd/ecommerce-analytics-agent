@@ -272,7 +272,12 @@ def analyze_orders(
 
     products = valid.assign(product_normalized=valid["商品名称"].map(normalize_product_name)).groupby(
         "product_normalized"
-    ).agg(gmv=("金额", "sum"), orders=("订单号", "nunique"), quantity=("数量", "sum")).reset_index()
+    ).agg(
+        product_name=("商品名称", lambda values: values.mode().iat[0]),
+        gmv=("金额", "sum"),
+        orders=("订单号", "nunique"),
+        quantity=("数量", "sum"),
+    ).reset_index()
     products = products.sort_values("gmv", ascending=False)
     products["gmv_share"] = products["gmv"] / valid_gmv
     products["cumulative_share"] = products["gmv"].cumsum() / valid_gmv
@@ -331,4 +336,3 @@ def analyze_orders(
             "数据中不含成本与实验设计，因此无法计算毛利率、ROI或因果效果。",
         ],
     }
-

@@ -45,11 +45,11 @@ CJK_FONT_CANDIDATES = [
     "Arial Unicode MS",      # macOS
 ]
 
-INK = "#17201d"
-GREEN = "#175c4c"
-AMBER = "#b66a19"
-BLUE = "#3f6f9f"
-GREY = "#9aa5a1"
+INK = "#17324d"
+GREEN = "#087e8b"
+AMBER = "#bd7419"
+BLUE = "#3478a6"
+GREY = "#8a9aad"
 
 SEGMENT_COLORS = {
     "重要价值客户": GREEN,
@@ -355,16 +355,16 @@ def product_pareto(analysis: dict[str, Any], top_n: int = 15):
     if not products:
         return _empty_figure("商品 GMV 集中度", "无可用商品数据"), {"summary": "无可用商品数据"}
 
-    names = [str(row["product_normalized"])[:10] for row in products]
+    names = [str(row.get("product_name") or row["product_normalized"]).strip() for row in products]
     gmv = [float(row["gmv"]) for row in products]
     cumulative = [float(row.get("cumulative_share") or 0) * 100 for row in products]
 
-    fig, ax = plt.subplots(figsize=(7.6, 3.6), dpi=160)
+    fig, ax = plt.subplots(figsize=(9.6, 4.8), dpi=160)
     ax.bar(range(len(names)), gmv, width=0.62, color=GREEN, label="单品 GMV")
     ax.set_ylabel("GMV（万元）", fontsize=10, color=INK)
     ax.set_xlabel("商品（按 GMV 降序）", fontsize=10, color=INK)
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, rotation=45, ha="right", fontsize=8)
+    ax.set_xticklabels(names, rotation=55, ha="right", fontsize=8)
     ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value / 10000:,.0f}"))
     _style_axes(ax)
 
@@ -379,8 +379,9 @@ def product_pareto(analysis: dict[str, Any], top_n: int = 15):
 
     handles = ax.get_legend_handles_labels()[0] + twin.get_legend_handles_labels()[0]
     labels = ax.get_legend_handles_labels()[1] + twin.get_legend_handles_labels()[1]
-    ax.legend(handles, labels, loc="upper right", fontsize=9, frameon=False)
-    ax.set_title(f"商品 GMV 集中度：TOP{len(names)} 帕累托（模拟数据）", fontsize=12, color=INK, pad=12)
+    fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(0.91, 0.96), ncol=2, fontsize=9, frameon=False)
+    ax.set_title(f"商品 GMV 集中度：TOP{len(names)} 帕累托（模拟数据）", fontsize=12, color=INK, pad=36)
+    fig.subplots_adjust(left=0.09, right=0.9, top=0.8, bottom=0.36)
 
     crossing = next((index + 1 for index, value in enumerate(cumulative) if value >= 80), None)
     summary = {

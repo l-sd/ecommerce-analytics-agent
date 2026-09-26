@@ -10,11 +10,11 @@
 
 ## 在线 Demo
 
-交互式仪表盘：可上传自己的 CSV/XLSX、按日期与渠道筛选、实时重算 KPI，按概览 / 流量与转化 / 销售与商品 / 用户 / 履约跟踪五个 Tab 展开，并下钻 RFM 分层。
+交互式仪表盘：可上传 CSV/XLSX、按日期与渠道筛选并实时重算 KPI。新版本地 Demo 默认使用 4,999 行可复现模拟订单，按经营总览、渠道与转化、商品分析、用户/RFM、退款与履约、数据质量六个页面组织，并提供筛选明细和分析摘要下载。
 
 ![仪表盘预览](docs/dashboard-preview.png)
 
-> **在线体验：** <https://b3a5c4dfd1bf4fdfa309ce85d78bb267.sg.agentos-app.run> —— 免安装，直接打开即可上传数据、按日期与渠道筛选、切换维度 Tab 并下载客户明细。
+> **在线体验：** <https://b3a5c4dfd1bf4fdfa309ce85d78bb267.sg.agentos-app.run> —— 免安装打开旧版在线演示。新版仪表盘仅在本地项目中更新，本次未发布线上。
 
 本地启动方式见[快速运行](#快速运行)。
 
@@ -30,7 +30,7 @@
 - **结果验证**：GMV 双路径计算、渠道/月度/品类/地域回算、流量漏斗单调性与订单守恒、履约漏斗单调性、动销率分母来源、退款拆分、5 行抽样核对、Excel 公式逻辑审计、HTML 结构检查、图表写入与内嵌检查，共 17 项。
 - **可复现性**：同一种子重新生成的数据与仓库文件逐字节一致，且由测试守住。
 
-默认演示数据包含三张合成表：**3,090 行订单明细**（3,000 个唯一订单、90 行重复）、**1,830 行流量表**（366 天 × 5 渠道）和 **50 行商品主数据**。流水线可稳定识别 **46 条日期缺失**和 **59 条可核对金额不一致**记录。完整数据质量结果见 [`artifacts/demo/cleaning_log.json`](artifacts/demo/cleaning_log.json)。
+命令行报告沿用三张基础合成表：**3,090 行订单明细**（3,000 个唯一订单、90 行重复）、**1,830 行流量表**（366 天 × 5 渠道）和 **50 行商品主数据**。交互式作品集 Demo 独立使用 `data/portfolio_demo/`：**4,999 行原始订单**（4,854 个唯一订单、145 行重复），并配套同口径流量和商品主数据。两套数据都由固定种子生成，页面会明确显示模拟数据声明；质量基线报告见 [`artifacts/demo/cleaning_log.json`](artifacts/demo/cleaning_log.json)。
 
 ## 分析结论与图表
 
@@ -96,6 +96,16 @@ python -m ecommerce_analytics generate-demo --rows 3000 --seed 20240601
 python -m ecommerce_analytics run --input data/synthetic_orders.csv --output artifacts/demo
 ```
 
+### 订单级平台导出（无商品/用户明细）
+
+`run` 也可识别包含订单号、订单金额、实付金额、下单时间的 CSV/XLSX 订单级导出；支持常见天猫中文列名、表头尾部空格，以及 UTF-8/GB18030 CSV。此数据粒度下只生成订单、付款时间、实付金额、退款金额、日期与地区分析；缺少的商品、客户、流量和履约维度会明确标为不可用，不会补造明细。报告分别列出“付款时间非空订单”和“实付金额大于 0 订单”，不把两者混作来源订单状态。
+
+```bash
+python -m ecommerce_analytics run --input path/to/order_export.csv --output path/to/analysis-output
+```
+
+输出订单级分析 JSON、清洗日志、Excel、HTML 报告和验证记录。报告沿用来源金额字段，不据此推算利润或因果结论。
+
 启动交互仪表盘：
 
 ```bash
@@ -143,7 +153,7 @@ streamlit run app.py
 ## 验证
 
 ```bash
-pytest                                    # 191 个测试
+pytest                                    # 196 个测试
 ruff check .                              # 代码风格
 ```
 

@@ -327,6 +327,25 @@ def test_pareto_reports_the_sku_that_crosses_eighty_percent():
     assert summary["top1_share"] == 0.5
 
 
+def test_pareto_shows_full_product_names_and_keeps_legend_outside_plot():
+    product_name = "华为平板 MatePad 11"
+    analysis = {
+        "products_top15": [
+            {
+                "product_normalized": "华为平板matepad11",
+                "product_name": product_name,
+                "gmv": 50.0,
+                "gmv_share": 1.0,
+                "cumulative_share": 1.0,
+            }
+        ]
+    }
+    figure, _summary = visuals.product_pareto(analysis)
+    assert figure.axes[0].get_xticklabels()[0].get_text() == product_name
+    assert len(figure.legends) == 1
+    assert figure.axes[0].get_legend() is None
+
+
 def test_pareto_returns_none_when_eighty_percent_is_never_reached():
     analysis = {
         "products_top15": [

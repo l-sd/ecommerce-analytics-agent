@@ -9,7 +9,6 @@ Skipped when the dashboard extra is not installed (``pip install -e ".[dev]"``).
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -20,15 +19,21 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 APP_PATH = PROJECT_ROOT / "app.py"
-COMMITTED_ANALYSIS = PROJECT_ROOT / "artifacts" / "demo" / "analysis.json"
 TIMEOUT = 180
 
 
 @pytest.fixture(scope="module")
 def analysis() -> dict:
-    if not COMMITTED_ANALYSIS.exists():
-        pytest.skip("committed analysis.json is absent")
-    return json.loads(COMMITTED_ANALYSIS.read_text(encoding="utf-8"))
+    from ecommerce_analytics.demo_data import read_catalog, read_traffic
+    from ecommerce_analytics.pipeline import analyze_orders, clean_orders, read_orders
+
+    root = PROJECT_ROOT / "data" / "portfolio_demo"
+    cleaned, _ = clean_orders(read_orders(root / "synthetic_orders.csv"))
+    return analyze_orders(
+        cleaned,
+        traffic=read_traffic(root / "synthetic_traffic.csv"),
+        catalog=read_catalog(root / "synthetic_products.csv"),
+    )
 
 
 def _run() -> AppTest:
@@ -99,7 +104,12 @@ def test_the_rfm_drilldown_offers_every_segment(default_view):
 
 
 def test_a_download_button_is_available(default_view):
-    assert len(default_view.download_button) == 1
+    assert len(default_view.download_button) >= 3
+
+
+def test_six_business_analysis_tabs_are_present(default_view):
+    labels = [tab.label for tab in default_view.tabs]
+    assert labels == ["经营总览", "渠道与转化", "商品分析", "用户/RFM", "退款与履约", "数据质量"]
 
 
 def test_the_default_view_keeps_orders_with_missing_dates(default_view):

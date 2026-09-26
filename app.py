@@ -5,7 +5,7 @@ Run it locally::
     pip install -e ".[dashboard]"
     streamlit run app.py
 
-The dashboard opens the committed demo dataset by default and also accepts a CSV
+The dashboard opens a 4,999-row synthetic portfolio dataset by default and also accepts a CSV
 or XLSX upload with the same eleven required columns, so a reviewer can put their
 own file through the same cleaning rules and 口径 without touching the command
 line.
@@ -15,15 +15,15 @@ charts and the RFM drill-down all come from the same :func:`analyze_orders` call
 the CLI uses, so the numbers here match ``artifacts/demo/analysis.json`` whenever
 no filter is applied.
 
-Layout note: the five tabs mirror the four industry analysis dimensions plus
-fulfilment. ``st.tabs`` renders every tab body on each rerun (inactive tabs are
-hidden with CSS, not skipped), so nothing here is lazy -- a reviewer can see
-everything without clicking, and ``AppTest`` can assert on all of it.
+The six tabs follow common e-commerce analyst workflows. ``st.tabs`` renders
+every tab body on each rerun (inactive tabs are hidden with CSS, not skipped),
+so a reviewer can inspect every dimension and ``AppTest`` can assert on all of it.
 """
 
 from __future__ import annotations
 
 import io
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -52,10 +52,16 @@ from ecommerce_analytics.pipeline import (
     read_orders,
     read_orders_stream,
 )
+from ecommerce_analytics.real_orders import (
+    analyze_order_level,
+    clean_order_level,
+    read_order_level,
+    read_order_level_stream,
+)
 
-DEFAULT_DATASET = PROJECT_ROOT / "data" / "synthetic_orders.csv"
-DEFAULT_TRAFFIC = PROJECT_ROOT / "data" / "synthetic_traffic.csv"
-DEFAULT_CATALOG = PROJECT_ROOT / "data" / "synthetic_products.csv"
+DEFAULT_DATASET = PROJECT_ROOT / "data" / "portfolio_demo" / "synthetic_orders.csv"
+DEFAULT_TRAFFIC = PROJECT_ROOT / "data" / "portfolio_demo" / "synthetic_traffic.csv"
+DEFAULT_CATALOG = PROJECT_ROOT / "data" / "portfolio_demo" / "synthetic_products.csv"
 UPLOAD_TYPES = ["csv", "xlsx"]
 
 # Reading order per tab. The wide charts (pareto, RFM) still get a row of their
@@ -98,6 +104,16 @@ def load_from_upload(payload: bytes, filename: str) -> tuple[pd.DataFrame, dict]
 
 
 @st.cache_data(show_spinner=False)
+def load_order_level_from_disk(path: str) -> tuple[pd.DataFrame, dict]:
+    return clean_order_level(read_order_level(Path(path)))
+
+
+@st.cache_data(show_spinner=False)
+def load_order_level_from_upload(payload: bytes, filename: str) -> tuple[pd.DataFrame, dict]:
+    return clean_order_level(read_order_level_stream(io.BytesIO(payload), Path(filename).suffix))
+
+
+@st.cache_data(show_spinner=False)
 def load_traffic(path: str) -> pd.DataFrame | None:
     """Load the companion traffic table, or ``None`` when it is not present."""
     candidate = Path(path)
@@ -120,6 +136,112 @@ def analyse(cleaned: pd.DataFrame, traffic: pd.DataFrame | None, catalog: pd.Dat
 def render_charts(analysis: dict, cleaned: pd.DataFrame) -> dict[str, dict]:
     """Render every chart to PNG bytes. Cached on the filtered inputs."""
     return visuals.render_all_figures(analysis, cleaned)
+
+
+def render_order_level_dashboard(cleaned: pd.DataFrame, cleaning_log: dict, dataset_name: str) -> None:
+    """Render the metrics supported by an order-grain export."""
+    st.title("电商订单分析 Demo")
+    st.caption(f"数据源：{dataset_name} · 订单级公开镜像样本。分析仅覆盖文件提供的字段，不推算商品、用户、流量或履约指标。")
+
+    with st.sidebar:
+        st.header("样本筛选")
+        dated = cleaned[cleaned["下单时间"].notna()]
+        if not dated.empty:
+            date_range = st.date_input(
+                "下单日期范围",
+                value=(dated["下单时间"].min().date(), dated["下单时间"].max().date()),
+                min_value=dated["下单时间"].min().date(),
+                max_value=dated["下单时间"].max().date(),
+            )
+        else:
+            date_range = None
+        regions = sorted(cleaned["收货省份"].dropna().astype(str).unique()) if "收货省份" in cleaned else []
+        selected_regions = st.multiselect("收货地区", regions, default=regions)
+
+    filtered = cleaned.copy()
+    if isinstance(date_range, tuple) and len(date_range) == 2:
+        start = pd.Timestamp(date_range[0])
+        end = pd.Timestamp(date_range[1]) + pd.Timedelta(days=1)
+        filtered = filtered[filtered["下单时间"].isna() | filtered["下单时间"].between(start, end, inclusive="left")]
+    if regions and selected_regions:
+        filtered = filtered[filtered["收货省份"].astype(str).isin(selected_regions)]
+    elif regions and not selected_regions:
+        filtered = filtered.iloc[0:0]
+    if filtered.empty:
+        st.warning("当前筛选下没有订单，请放宽日期或地区范围。")
+        return
+
+    analysis = analyze_order_level(filtered)
+    kpi = analysis["kpi"]
+    with st.sidebar:
+        st.divider()
+        st.subheader("数据体检")
+        st.metric("原始订单行", f"{cleaning_log['raw_rows']:,}")
+        st.metric("去重后订单", f"{cleaning_log['rows_after_deduplication']:,}")
+        st.metric("移除重复行", f"{cleaning_log['duplicate_rows_removed']:,}")
+
+    metrics = st.columns(4)
+    metrics[0].metric("订单数", f"{kpi['orders']:,}")
+    metrics[1].metric("订单金额", f"¥{kpi['order_amount']:,.2f}")
+    metrics[2].metric("实付金额", f"¥{kpi['paid_amount']:,.2f}")
+    metrics[3].metric("退款金额", f"¥{kpi['refund_amount']:,.2f}" if kpi["refund_amount"] is not None else "不可用")
+    rates = st.columns(2)
+    rates[0].metric("付款时间非空占比", f"{kpi['payment_timestamp_rate'] * 100:.2f}%" if kpi["payment_timestamp_rate"] is not None else "不可用")
+    rates[1].metric("实付金额大于 0 占比", f"{kpi['positive_actual_payment_order_rate'] * 100:.2f}%" if kpi["positive_actual_payment_order_rate"] is not None else "不可用")
+    st.info("两项支付指标使用不同字段口径；付款时间存在不等同于实付金额大于 0，也不直接代表订单完成或转化。")
+
+    overview_tab, date_tab, region_tab, quality_tab = st.tabs(["概览", "日期趋势", "地区分析", "数据质量与口径"])
+    with overview_tab:
+        st.subheader("订单金额结构")
+        amount_df = pd.DataFrame([
+            {"指标": "订单金额", "金额（元）": kpi["order_amount"]},
+            {"指标": "实付金额", "金额（元）": kpi["paid_amount"]},
+            {"指标": "退款金额", "金额（元）": kpi["refund_amount"] or 0},
+        ]).set_index("指标")
+        st.bar_chart(amount_df)
+        st.caption(f"样本日期：{kpi['first_order_date']} 至 {kpi['last_order_date']}；当前筛选 {kpi['orders']:,} 笔订单。")
+
+    with date_tab:
+        st.subheader("按下单日期汇总")
+        daily = pd.DataFrame(analysis["daily"])
+        if daily.empty:
+            st.info("没有可解析的下单时间。")
+        else:
+            daily["下单日期"] = pd.to_datetime(daily["下单日期"])
+            st.line_chart(daily.set_index("下单日期")[["orders", "payment_timestamp_orders", "positive_actual_payment_orders"]])
+            st.line_chart(daily.set_index("下单日期")[["order_amount", "paid_amount", "refund_amount"]])
+            st.dataframe(daily, hide_index=True, use_container_width=True)
+
+    with region_tab:
+        st.subheader("地区订单与金额汇总")
+        region = pd.DataFrame(analysis["region"])
+        if region.empty:
+            st.info(analysis["availability"]["region"]["reason"])
+        else:
+            st.bar_chart(region.head(15).set_index("收货省份")[["paid_amount"]])
+            st.dataframe(region, hide_index=True, use_container_width=True)
+
+    with quality_tab:
+        st.subheader("清洗记录")
+        st.write({
+            "原始行数": cleaning_log["raw_rows"],
+            "去重后行数": cleaning_log["rows_after_deduplication"],
+            "移除重复行": cleaning_log["duplicate_rows_removed"],
+            "缺失/异常下单时间": cleaning_log["unparseable_or_missing_order_dates"],
+            "缺失/异常金额字段": cleaning_log["missing_or_unparseable_money"],
+        })
+        with st.expander("清洗规则", expanded=True):
+            for rule in cleaning_log["rules"]:
+                st.markdown(f"- {rule}")
+        st.subheader("分析边界")
+        for name, item in analysis["availability"].items():
+            if not item["available"]:
+                st.markdown(f"- **{name}不可用：**{item['reason']}")
+        st.subheader("汇总校验")
+        st.write({name: ("通过" if value is True else "未通过" if value is False else "不适用")
+                  for name, value in analysis["validation"].items()})
+        for limitation in analysis["limitations"]:
+            st.caption(limitation)
 
 
 # --- formatting helpers ------------------------------------------------------
@@ -345,9 +467,9 @@ def _render_chart_group(charts: dict, keys: list[str]) -> None:
         chart_columns = st.columns(len(row))
         for column, key in zip(chart_columns, row, strict=True):
             with column:
-                st.image(charts[key]["png"], width="stretch")
                 st.markdown(f"**{CHART_TITLES[key]}**")
                 st.caption(TAKEAWAYS[key](charts[key]["summary"]))
+                st.image(charts[key]["png"], width="stretch")
 
 
 def _unavailable(module: dict | None, label: str) -> bool:
@@ -365,10 +487,28 @@ def _table_or_note(rows: list[dict], note: str) -> None:
 
 def main() -> None:
     st.set_page_config(page_title="电商订单分析仪表盘", layout="wide")
+    st.markdown(
+        """
+        <style>
+        .stApp { background: #f5f8fc; color: #172b4d; }
+        [data-testid="stHeader"] { background: rgba(245, 248, 252, .92); }
+        [data-testid="stSidebar"] { background: #edf3f9; border-right: 1px solid #dce6f0; }
+        [data-testid="stMetric"] { background: #fff; border: 1px solid #e3ebf3; border-radius: 12px; padding: 14px 16px; box-shadow: 0 3px 12px rgba(30, 64, 100, .05); }
+        [data-testid="stMetricLabel"] { color: #52677f; }
+        [data-testid="stMetricValue"] { color: #123d63; font-size: clamp(.95rem, 1.5vw, 1.2rem) !important; }
+        .stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid #dce6f0; }
+        .stTabs [data-baseweb="tab"] { color: #536a82; padding: 10px 14px; }
+        .stTabs [aria-selected="true"] { color: #087e8b; border-bottom-color: #087e8b; }
+        [data-testid="stDataFrame"] { border: 1px solid #e3ebf3; border-radius: 10px; overflow: hidden; }
+        div.stButton > button, div.stDownloadButton > button { border-radius: 8px; border-color: #bdd5e6; color: #14547b; }
+        hr { border-color: #dce6f0; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     st.title("电商订单分析仪表盘")
     st.caption(
-        "模拟练习数据，由固定随机种子生成，不含任何真实企业、客户或交易信息。"
-        "清洗、KPI 口径与 CLI 完全一致。"
+        "电商经营分析作品集 Demo · 当前展示可复现的模拟数据，非真实企业交易。支持上传 CSV/XLSX 体验同一套分析流程。"
     )
 
     # --- sidebar -------------------------------------------------------------
@@ -384,9 +524,20 @@ def main() -> None:
         if upload is not None:
             try:
                 cleaned, cleaning_log = load_from_upload(upload.getvalue(), upload.name)
-            except ValueError as error:
-                st.error(f"无法读取该文件：{error}")
-                st.stop()
+            except ValueError:
+                try:
+                    order_level_cleaned, order_level_log = load_order_level_from_upload(
+                        upload.getvalue(), upload.name
+                    )
+                except ValueError as order_level_error:
+                    st.error(f"无法读取该文件：{order_level_error}")
+                    st.stop()
+                except Exception as error:  # noqa: BLE001 - surfaced to the user verbatim
+                    st.error(f"解析失败：{error}")
+                    st.stop()
+                st.success(f"已载入订单级数据：{upload.name}")
+                render_order_level_dashboard(order_level_cleaned, order_level_log, upload.name)
+                return
             except Exception as error:  # noqa: BLE001 - surfaced to the user verbatim
                 st.error(f"解析失败：{error}")
                 st.stop()
@@ -397,7 +548,7 @@ def main() -> None:
             cleaned, cleaning_log = load_from_disk(str(DEFAULT_DATASET))
             traffic = load_traffic(str(DEFAULT_TRAFFIC))
             catalog = load_catalog(str(DEFAULT_CATALOG))
-            st.info("当前使用仓库内置的模拟数据。上传文件可替换。")
+            st.info("当前使用固定种子生成的模拟数据（4,999 行原始记录，含 145 行重复记录）。上传文件可替换。")
             sources = []
             if traffic is not None:
                 sources.append(f"流量表 {len(traffic):,} 行")
@@ -483,8 +634,8 @@ def main() -> None:
     users_summary = analysis.get("users") or {}
     fulfilment_summary = analysis.get("fulfilment") or {}
 
-    overview_tab, traffic_tab, sales_tab, users_tab, fulfilment_tab = st.tabs(
-        ["概览", "流量与转化", "销售与商品", "用户", "履约跟踪"]
+    overview_tab, traffic_tab, sales_tab, users_tab, fulfilment_tab, quality_tab = st.tabs(
+        ["经营总览", "渠道与转化", "商品分析", "用户/RFM", "退款与履约", "数据质量"]
     )
 
     # --- 概览 ----------------------------------------------------------------
@@ -498,7 +649,7 @@ def main() -> None:
             ("连带率", decimal(kpi["items_per_order"])),
         ])
 
-        st.subheader("四大维度与履约")
+        st.subheader("经营与服务指标")
         _metric_row(st.columns(5), [
             ("下单转化率", percent(dig(analysis, "traffic", "rates", "下单转化率"), 2)),
             ("动销率", percent(dig(analysis, "sales", "sell_through", "sell_through_rate"))),
@@ -506,7 +657,7 @@ def main() -> None:
             ("迟发率", percent(dig(analysis, "fulfilment", "late", "late_rate"), 2)),
             ("逾期率", percent(dig(analysis, "fulfilment", "delivery", "overdue_rate"), 2)),
         ])
-        st.caption("前五项为有效订单口径；迟发率分母为应发订单，逾期率分母为已签收订单。")
+        st.caption("核心经营指标按有效订单计算；迟发率分母为已发货订单，逾期率分母为已签收订单。")
 
         _render_chart_group(charts, TAB_CHARTS["overview"])
 
@@ -592,7 +743,7 @@ def main() -> None:
                     f"订单表中渠道与日期可归属的订单 {conservation.get('attributable_orders'):,}，{mark}。"
                 )
 
-    # --- 销售与商品 ----------------------------------------------------------
+    # --- 商品分析 ------------------------------------------------------------
     with sales_tab:
         _metric_row(st.columns(4), [
             ("有效 GMV", money(kpi["gmv"])),
@@ -642,33 +793,6 @@ def main() -> None:
                     for row in sales_summary.get("brand") or []
                 ],
                 "未提供商品主数据表",
-            )
-
-        refund = sales_summary.get("refund") or {}
-        st.subheader("渠道退款率")
-        st.caption("分母为该渠道的全量订单数（含退款与取消），与核心 KPI 的有效订单口径不同。")
-        _table_or_note(
-            [
-                {
-                    "渠道": row["渠道"],
-                    "订单数": row["orders"],
-                    "退款数": row["refunds"],
-                    "退款率": percent(row["refund_rate"], 2),
-                    "退款金额": money(row["refund_amount"]),
-                }
-                for row in refund.get("by_channel") or []
-            ],
-            "无退款数据",
-        )
-
-        if refund.get("reasons"):
-            st.subheader("退款原因分布")
-            _table_or_note(
-                [
-                    {"退款原因": row["退款原因"], "订单数": row["orders"], "占比": percent(row["share"])}
-                    for row in refund["reasons"]
-                ],
-                "未提供退款原因列",
             )
 
     # --- 用户 ----------------------------------------------------------------
@@ -752,6 +876,37 @@ def main() -> None:
 
     # --- 履约跟踪 ------------------------------------------------------------
     with fulfilment_tab:
+        refund = sales_summary.get("refund") or {}
+        st.subheader("退款概况")
+        _metric_row(st.columns(3), [
+            ("退款及取消订单", f"{refund.get('refunds', 0):,}"),
+            ("全量订单退款率", percent(refund.get("refund_rate"), 2)),
+            ("退款金额", money(refund.get("refund_amount"))),
+        ])
+        st.caption("退款率分母为筛选后的全量订单（含退款与取消），与有效订单 GMV 口径不同。")
+        left, right = st.columns(2)
+        with left:
+            st.subheader("渠道退款率")
+            _table_or_note(
+                [
+                    {"渠道": row["渠道"], "订单数": row["orders"], "退款数": row["refunds"],
+                     "退款率": percent(row["refund_rate"], 2), "退款金额": money(row["refund_amount"])}
+                    for row in refund.get("by_channel") or []
+                ],
+                "无退款数据",
+            )
+        with right:
+            st.subheader("退款原因分布")
+            _table_or_note(
+                [
+                    {"退款原因": row["退款原因"], "订单数": row["orders"], "占比": percent(row["share"])}
+                    for row in refund.get("reasons") or []
+                ],
+                "未提供退款原因列",
+            )
+
+        st.divider()
+        st.subheader("履约跟踪")
         if not _unavailable(fulfilment_summary, "履约跟踪"):
             late = fulfilment_summary.get("late") or {}
             delivery = fulfilment_summary.get("delivery") or {}
@@ -813,11 +968,87 @@ def main() -> None:
                 "日期不可用",
             )
 
-    # --- limitations ---------------------------------------------------------
-    st.subheader("口径与局限")
-    for item in analysis["limitations"]:
-        st.markdown(f"- {item}")
-    st.caption("本页仅演示分析流程，模拟数据的结果不应被解读为真实业务成果。")
+    # --- 数据质量 ------------------------------------------------------------
+    with quality_tab:
+        raw = cleaning_log.get("raw") or {}
+        st.subheader("数据概况与清洗结果")
+        _metric_row(st.columns(4), [
+            ("原始行数", f"{raw.get('rows', 0):,}"),
+            ("去重后订单", f"{cleaning_log.get('rows_after_deduplication', 0):,}"),
+            ("识别重复", f"{cleaning_log.get('duplicates_removed', 0):,}"),
+            ("当前筛选记录", f"{len(filtered):,}"),
+        ])
+        profile_rows = [
+            ("日期缺失", raw.get("missing_dates", 0)),
+            ("单价缺失或无法解析", raw.get("missing_or_unparseable_prices", 0)),
+            ("数量缺失", raw.get("missing_quantities", 0)),
+            ("数量为零", raw.get("zero_quantities", 0)),
+            ("负数量", raw.get("negative_quantities", 0)),
+            ("原始金额缺失", raw.get("missing_amounts", 0)),
+            ("可核对金额不一致", raw.get("checkable_amount_mismatches", 0)),
+            ("渠道缺失", raw.get("missing_channels", 0)),
+            ("商品ID缺失", raw.get("missing_product_ids", 0)),
+            ("用户ID缺失", raw.get("missing_user_ids", 0)),
+            ("收货省份缺失", raw.get("missing_provinces", 0)),
+        ]
+        st.dataframe(pd.DataFrame(profile_rows, columns=["检查项", "记录数"]), hide_index=True, use_container_width=True)
+
+        st.subheader("一致性校验")
+        values = analysis["validation_values"]
+        checks = [
+            ("有效 GMV 与单价×数量回算", abs(values["gmv_from_amount"] - values["gmv_from_price_times_quantity"]) < 0.01,
+             f"¥{values['gmv_from_amount']:,.2f} / ¥{values['gmv_from_price_times_quantity']:,.2f}"),
+            ("渠道 GMV 汇总", abs(values["gmv_from_amount"] - values["channel_gmv_sum"]) < 0.01,
+             f"¥{values['channel_gmv_sum']:,.2f}"),
+            ("月度 GMV 汇总（不含缺失日期）", abs(values["gmv_from_amount"] - values["monthly_gmv_sum"] - values["valid_gmv_with_missing_date"]) < 0.01,
+             f"月度 ¥{values['monthly_gmv_sum']:,.2f}；缺日期 ¥{values['valid_gmv_with_missing_date']:,.2f}"),
+            ("流量与订单下单数守恒", (analysis.get("traffic") or {}).get("conservation", {}).get("passed"),
+             "仅比较有可解析日期和渠道的订单"),
+            ("履约漏斗单调", fulfilment_summary.get("funnel_monotonic"), "全量订单口径"),
+        ]
+        check_df = pd.DataFrame([
+            {"检查项": name, "结果": "通过" if passed is True else "不适用" if passed is None else "未通过", "说明": detail}
+            for name, passed, detail in checks
+        ])
+        st.dataframe(check_df, hide_index=True, use_container_width=True)
+
+        st.subheader("字段可用性与清洗规则")
+        st.caption("必需字段可用于核心订单分析；以下可选字段缺失时，对应维度会标记不可用，不会补造数据。")
+        st.write({"已提供可选字段": cleaning_log.get("optional_columns_supplied", []),
+                  "未提供可选字段": cleaning_log.get("optional_columns_absent", [])})
+        for rule in cleaning_log.get("rules", []):
+            st.markdown(f"- {rule}")
+
+        st.subheader("当前筛选订单明细")
+        detail = filtered.copy()
+        st.dataframe(detail, hide_index=True, use_container_width=True)
+        st.download_button(
+            "下载当前筛选订单 CSV",
+            data=detail.to_csv(index=False).encode("utf-8-sig"),
+            file_name="filtered_orders.csv",
+            mime="text/csv",
+        )
+        report = {
+            "notice": "模拟数据演示；不是任何企业的真实交易记录。",
+            "filters": {"date_range": [str(v) for v in date_range] if date_range else None,
+                        "channels": channels or all_channels},
+            "cleaning": cleaning_log,
+            "validation": [{"name": name, "passed": passed, "detail": detail} for name, passed, detail in checks],
+            "kpi": kpi,
+            "limitations": analysis["limitations"],
+        }
+        st.download_button(
+            "下载分析摘要 JSON",
+            data=json.dumps(report, ensure_ascii=False, indent=2, default=str).encode("utf-8"),
+            file_name="analysis_summary.json",
+            mime="application/json",
+        )
+
+        st.subheader("口径与局限")
+        st.caption("GMV、客单价等核心指标按有效订单计算；退款率按全量订单计算；迟发率按已发货订单计算；逾期率按已签收订单计算。")
+        for item in analysis["limitations"]:
+            st.markdown(f"- {item}")
+        st.caption("所有结果仅用于演示分析流程，模拟数据的结果不应被解读为真实业务成果。")
 
 
 if __name__ == "__main__":

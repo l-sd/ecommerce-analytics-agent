@@ -100,6 +100,11 @@ def test_the_original_top_level_keys_are_unchanged(demo):
         assert key in analysis, key
 
 
+def test_product_ranking_keeps_readable_names_for_chart_labels(bare):
+    products = bare["analysis"]["products_top15"]
+    assert {row["product_name"] for row in products} == {"甲", "乙", "丙"}
+
+
 def test_the_five_new_top_level_keys_are_present(demo):
     analysis = demo["analysis"]
     for key in NEW_TOP_LEVEL_KEYS:

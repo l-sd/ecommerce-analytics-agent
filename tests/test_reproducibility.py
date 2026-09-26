@@ -18,6 +18,7 @@ COMMITTED_DATASET = PROJECT_ROOT / "data" / "synthetic_orders.csv"
 COMMITTED_MANIFEST = PROJECT_ROOT / "data" / "synthetic_orders.manifest.json"
 DOCUMENTED_ROWS = 3000
 DOCUMENTED_SEED = 20240601
+PORTFOLIO_ROWS = 4854
 
 
 def _normalise(payload: bytes) -> bytes:
@@ -63,3 +64,25 @@ def test_different_seeds_produce_different_data(tmp_path):
     write_demo(second, rows=500, seed=8)
 
     assert first.read_bytes() != second.read_bytes()
+
+
+def test_portfolio_demo_has_4999_reproducible_order_rows_and_companions(tmp_path):
+    regenerated = tmp_path / "synthetic_orders.csv"
+    manifest = write_demo(regenerated, rows=PORTFOLIO_ROWS, seed=DOCUMENTED_SEED)
+
+    assert manifest["rows_with_duplicates"] == 4999
+    assert manifest["base_unique_orders"] == PORTFOLIO_ROWS
+    assert manifest["duplicate_rows"] == 145
+    assert manifest["traffic_rows"] == 366 * 5
+    assert manifest["catalog_rows"] == 50
+
+    committed_dir = PROJECT_ROOT / "data" / "portfolio_demo"
+    assert _normalise(regenerated.read_bytes()) == _normalise(
+        (committed_dir / "synthetic_orders.csv").read_bytes()
+    )
+    assert _normalise((tmp_path / "synthetic_traffic.csv").read_bytes()) == _normalise(
+        (committed_dir / "synthetic_traffic.csv").read_bytes()
+    )
+    assert _normalise((tmp_path / "synthetic_products.csv").read_bytes()) == _normalise(
+        (committed_dir / "synthetic_products.csv").read_bytes()
+    )

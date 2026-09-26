@@ -16,6 +16,7 @@ from .deliverables import (
 )
 from .demo_data import read_catalog, read_traffic, write_demo
 from .pipeline import analyze_orders, clean_orders, read_orders
+from .real_orders import analyze_order_level, clean_order_level, read_order_level, write_order_level_outputs
 from .visuals import build_all_figures
 
 # Companion tables live next to the order sheet. When they are absent the run
@@ -77,7 +78,21 @@ def main() -> None:
 
     output_dir: Path = args.output
     output_dir.mkdir(parents=True, exist_ok=True)
-    raw = read_orders(args.input)
+    try:
+        raw = read_orders(args.input)
+    except ValueError:
+        # Public platform exports often have order-level fields but no item,
+        # quantity, customer, or status fields. Route these through a separate
+        # profile instead of fabricating values to satisfy the demo schema.
+        order_level_raw = read_order_level(args.input)
+        order_level_cleaned, order_level_log = clean_order_level(order_level_raw)
+        order_level_analysis = analyze_order_level(order_level_cleaned)
+        write_order_level_outputs(output_dir, order_level_cleaned, order_level_log, order_level_analysis)
+        print(f"Order-level analysis completed. Output: {output_dir}")
+        if not all(value is not False for value in order_level_analysis["validation"].values()):
+            raise SystemExit(1) from None
+        return
+
     cleaned, cleaning_log = clean_orders(raw)
     traffic = _load_companion(args.input, TRAFFIC_FILENAME, read_traffic)
     catalog = _load_companion(args.input, CATALOG_FILENAME, read_catalog)
